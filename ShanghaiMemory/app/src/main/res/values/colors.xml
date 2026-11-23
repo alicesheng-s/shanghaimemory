@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 色板 1：墨金（默认） -->
+    <color name="ink">#0E1116</color>
+    <color name="ink_raise">#161A22</color>
+    <color name="ink_card">#1C222C</color>
+    <color name="line">#2A3038</color>
+    <color name="amber">#C8A66B</color>
+    <color name="amber_bright">#E8C88A</color>
+    <color name="paper">#F2EDE3</color>
+    <color name="muted">#8A9099</color>
+    <color name="danger">#D9534F</color>
+    <color name="ok">#5FA87C</color>
+    <color name="scrim">#CC0E1116</color>
+
+    <!-- 色板 2：樱花粉（深樱墨底 + 樱粉高光） -->
+    <color name="sakura_bg">#1B1216</color>
+    <color name="sakura_raise">#241820</color>
+    <color name="sakura_card">#2E1E28</color>
+    <color name="sakura_line">#432C38</color>
+    <color name="sakura_accent">#F0A2B8</color>
+    <color name="sakura_accent_bright">#FFC8D8</color>
+    <color name="sakura_text">#FBEFF3</color>
+    <color name="sakura_muted">#B99CA7</color>
+    <color name="sakura_danger">#E4677F</color>
+    <color name="sakura_ok">#6FA98A</color>
+    <color name="sakura_scrim">#CC1B1216</color>
+
+    <!-- 色板 3：青瓷 -->
+    <color name="celadon_bg">#0F1614</color>
+    <color name="celadon_raise">#16201D</color>
+    <color name="celadon_card">#1D2A25</color>
+    <color name="celadon_line">#2C3B35</color>
+    <color name="celadon_accent">#8FBFA8</color>
+    <color name="celadon_accent_bright">#BBDCC9</color>
+    <color name="celadon_text">#EFF5F1</color>
+    <color name="celadon_muted">#8FA39A</color>
+    <color name="celadon_danger">#D97A6E</color>
+    <color name="celadon_ok">#7FB89A</color>
+    <color name="celadon_scrim">#CC0F1614</color>
+    <!-- ========== 亮色版：墨金 ========== -->
+    <color name="ink_light">#F7F3EC</color>
+    <color name="ink_raise_light">#FFFDF8</color>
+    <color name="ink_card_light">#EFE8DC</color>
+    <color name="line_light">#DCD2C1</color>
+    <color name="amber_light">#9A7B36</color>
+    <color name="amber_bright_light">#B08F45</color>
+    <color name="paper_light">#1A1712</color>
+    <color name="muted_light">#6B6357</color>
+    <color name="danger_light">#B3403C</color>
+    <color name="ok_light">#3F7A57</color>
+    <color name="scrim_light">#CCF7F3EC</color>
+
+    <!-- ========== 亮色版：樱花粉 ========== -->
+    <color name="sakura_bg_light">#FBF0F3</color>
+    <color name="sakura_raise_light">#FFF8FA</color>
+    <color name="sakura_card_light">#F6E4EA</color>
+    <color name="sakura_line_light">#E4CBD5</color>
+    <color name="sakura_accent_light">#C35F7E</color>
+    <color name="sakura_accent_bright_light">#A94E6A</color>
+    <color name="sakura_text_light">#241419</color>
+    <color name="sakura_muted_light">#8A6472</color>
+    <color name="sakura_danger_light">#C0455F</color>
+    <color name="sakura_ok_light">#4E8A6B</color>
+    <color name="sakura_scrim_light">#CCFBF0F3</color>
+
+    <!-- ========== 亮色版：青瓷 ========== -->
+    <color name="celadon_bg_light">#F1F6F3</color>
+    <color name="celadon_raise_light">#FBFEFC</color>
+    <color name="celadon_card_light">#E3EDE7</color>
+    <color name="celadon_line_light">#C9DAD1</color>
+    <color name="celadon_accent_light">#4C7F68</color>
+    <color name="celadon_accent_bright_light">#3E6B57</color>
+    <color name="celadon_text_light">#16211C</color>
+    <color name="celadon_muted_light">#5E7268</color>
+    <color name="celadon_danger_light">#A85A4F</color>
+    <color name="celadon_ok_light">#3F7A5E</color>
+    <color name="celadon_scrim_light">#CCF1F6F3</color>
+
+</resources>

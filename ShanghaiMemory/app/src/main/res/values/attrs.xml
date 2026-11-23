@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 色板令牌：布局、drawable、代码统一通过 ?attr/ 或 resolve 读取，
+         切换配色时只换主题，不动任何布局文件。 -->
+    <attr name="shBg" format="color" />
+    <attr name="shBgRaise" format="color" />
+    <attr name="shCard" format="color" />
+    <attr name="shLine" format="color" />
+    <attr name="shAccent" format="color" />
+    <attr name="shAccentBright" format="color" />
+    <attr name="shText" format="color" />
+    <attr name="shTextMuted" format="color" />
+    <attr name="shDanger" format="color" />
+    <attr name="shOk" format="color" />
+    <attr name="shScrim" format="color" />
+
+</resources>

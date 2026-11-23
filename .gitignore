@@ -1,0 +1,17 @@
+# 本地快照与构建缓存，不入库
+backups/
+.gradle/
+.kotlin/
+.shots/
+build/
+captures/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# 系统与日志
+Thumbs.db
+.DS_Store
+*.log

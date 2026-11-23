@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ========== 基线：暗色 ========== -->
+    <!-- Material 的角色全部指向本应用色板令牌，具体色值由各套色板覆盖 -->
+    <style name="Theme.ShanghaiMemory.Base" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">?attr/shAccent</item>
+        <item name="colorOnPrimary">?attr/shBg</item>
+        <item name="colorSecondary">?attr/shAccentBright</item>
+        <item name="colorOnSecondary">?attr/shBg</item>
+        <item name="colorSurface">?attr/shBgRaise</item>
+        <item name="colorOnSurface">?attr/shText</item>
+        <item name="colorSurfaceVariant">?attr/shCard</item>
+        <item name="colorOnSurfaceVariant">?attr/shTextMuted</item>
+        <item name="colorOutline">?attr/shLine</item>
+        <item name="colorError">?attr/shDanger</item>
+        <item name="android:colorBackground">?attr/shBg</item>
+        <item name="android:windowBackground">?attr/shBg</item>
+        <item name="android:statusBarColor">?attr/shBg</item>
+        <item name="android:navigationBarColor">?attr/shBg</item>
+        <item name="android:textColorPrimary">?attr/shText</item>
+        <item name="android:textColorSecondary">?attr/shTextMuted</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="materialAlertDialogTheme">@style/Theme.ShanghaiMemory.Dialog</item>
+    </style>
+
+    <!-- ========== 基线：亮色 ========== -->
+    <style name="Theme.ShanghaiMemory.Base.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">?attr/shAccent</item>
+        <item name="colorOnPrimary">?attr/shBg</item>
+        <item name="colorSecondary">?attr/shAccentBright</item>
+        <item name="colorOnSecondary">?attr/shBg</item>
+        <item name="colorSurface">?attr/shBgRaise</item>
+        <item name="colorOnSurface">?attr/shText</item>
+        <item name="colorSurfaceVariant">?attr/shCard</item>
+        <item name="colorOnSurfaceVariant">?attr/shTextMuted</item>
+        <item name="colorOutline">?attr/shLine</item>
+        <item name="colorError">?attr/shDanger</item>
+        <item name="android:colorBackground">?attr/shBg</item>
+        <item name="android:windowBackground">?attr/shBg</item>
+        <item name="android:statusBarColor">?attr/shBg</item>
+        <item name="android:navigationBarColor">?attr/shBg</item>
+        <item name="android:textColorPrimary">?attr/shText</item>
+        <item name="android:textColorSecondary">?attr/shTextMuted</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="materialAlertDialogTheme">@style/Theme.ShanghaiMemory.Dialog.Light</item>
+    </style>
+
+    <!-- ========== 墨金 ========== -->
+    <style name="Theme.ShanghaiMemory" parent="Theme.ShanghaiMemory.Base">
+        <item name="shBg">@color/ink</item>
+        <item name="shBgRaise">@color/ink_raise</item>
+        <item name="shCard">@color/ink_card</item>
+        <item name="shLine">@color/line</item>
+        <item name="shAccent">@color/amber</item>
+        <item name="shAccentBright">@color/amber_bright</item>
+        <item name="shText">@color/paper</item>
+        <item name="shTextMuted">@color/muted</item>
+        <item name="shDanger">@color/danger</item>
+        <item name="shOk">@color/ok</item>
+        <item name="shScrim">@color/scrim</item>
+    </style>
+
+    <style name="Theme.ShanghaiMemory.Light" parent="Theme.ShanghaiMemory.Base.Light">
+        <item name="shBg">@color/ink_light</item>
+        <item name="shBgRaise">@color/ink_raise_light</item>
+        <item name="shCard">@color/ink_card_light</item>
+        <item name="shLine">@color/line_light</item>
+        <item name="shAccent">@color/amber_light</item>
+        <item name="shAccentBright">@color/amber_bright_light</item>
+        <item name="shText">@color/paper_light</item>
+        <item name="shTextMuted">@color/muted_light</item>
+        <item name="shDanger">@color/danger_light</item>
+        <item name="shOk">@color/ok_light</item>
+        <item name="shScrim">@color/scrim_light</item>
+    </style>
+
+    <!-- ========== 樱花粉 ========== -->
+    <style name="Theme.ShanghaiMemory.Sakura" parent="Theme.ShanghaiMemory.Base">
+        <item name="shBg">@color/sakura_bg</item>
+        <item name="shBgRaise">@color/sakura_raise</item>
+        <item name="shCard">@color/sakura_card</item>
+        <item name="shLine">@color/sakura_line</item>
+        <item name="shAccent">@color/sakura_accent</item>
+        <item name="shAccentBright">@color/sakura_accent_bright</item>
+        <item name="shText">@color/sakura_text</item>
+        <item name="shTextMuted">@color/sakura_muted</item>
+        <item name="shDanger">@color/sakura_danger</item>
+        <item name="shOk">@color/sakura_ok</item>
+        <item name="shScrim">@color/sakura_scrim</item>
+    </style>
+
+    <style name="Theme.ShanghaiMemory.Sakura.Light" parent="Theme.ShanghaiMemory.Base.Light">
+        <item name="shBg">@color/sakura_bg_light</item>
+        <item name="shBgRaise">@color/sakura_raise_light</item>
+        <item name="shCard">@color/sakura_card_light</item>
+        <item name="shLine">@color/sakura_line_light</item>
+        <item name="shAccent">@color/sakura_accent_light</item>
+        <item name="shAccentBright">@color/sakura_accent_bright_light</item>
+        <item name="shText">@color/sakura_text_light</item>
+        <item name="shTextMuted">@color/sakura_muted_light</item>
+        <item name="shDanger">@color/sakura_danger_light</item>
+        <item name="shOk">@color/sakura_ok_light</item>
+        <item name="shScrim">@color/sakura_scrim_light</item>
+    </style>
+
+    <!-- ========== 青瓷 ========== -->
+    <style name="Theme.ShanghaiMemory.Celadon" parent="Theme.ShanghaiMemory.Base">
+        <item name="shBg">@color/celadon_bg</item>
+        <item name="shBgRaise">@color/celadon_raise</item>
+        <item name="shCard">@color/celadon_card</item>
+        <item name="shLine">@color/celadon_line</item>
+        <item name="shAccent">@color/celadon_accent</item>
+        <item name="shAccentBright">@color/celadon_accent_bright</item>
+        <item name="shText">@color/celadon_text</item>
+        <item name="shTextMuted">@color/celadon_muted</item>
+        <item name="shDanger">@color/celadon_danger</item>
+        <item name="shOk">@color/celadon_ok</item>
+        <item name="shScrim">@color/celadon_scrim</item>
+    </style>
+
+    <style name="Theme.ShanghaiMemory.Celadon.Light" parent="Theme.ShanghaiMemory.Base.Light">
+        <item name="shBg">@color/celadon_bg_light</item>
+        <item name="shBgRaise">@color/celadon_raise_light</item>
+        <item name="shCard">@color/celadon_card_light</item>
+        <item name="shLine">@color/celadon_line_light</item>
+        <item name="shAccent">@color/celadon_accent_light</item>
+        <item name="shAccentBright">@color/celadon_accent_bright_light</item>
+        <item name="shText">@color/celadon_text_light</item>
+        <item name="shTextMuted">@color/celadon_muted_light</item>
+        <item name="shDanger">@color/celadon_danger_light</item>
+        <item name="shOk">@color/celadon_ok_light</item>
+        <item name="shScrim">@color/celadon_scrim_light</item>
+    </style>
+
+    <style name="Theme.ShanghaiMemory.Map" parent="Theme.ShanghaiMemory" />
+
+    <style name="Theme.ShanghaiMemory.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">?attr/shBgRaise</item>
+        <item name="colorSurfaceContainer">?attr/shBgRaise</item>
+        <item name="colorSurfaceContainerHigh">?attr/shCard</item>
+        <item name="colorOnSurface">?attr/shText</item>
+        <item name="colorOnSurfaceVariant">?attr/shTextMuted</item>
+        <item name="colorPrimary">?attr/shAccent</item>
+        <item name="colorOutline">?attr/shLine</item>
+    </style>
+
+    <style name="Theme.ShanghaiMemory.Dialog.Light" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="colorSurface">?attr/shBgRaise</item>
+        <item name="colorSurfaceContainer">?attr/shBgRaise</item>
+        <item name="colorSurfaceContainerHigh">?attr/shCard</item>
+        <item name="colorOnSurface">?attr/shText</item>
+        <item name="colorOnSurfaceVariant">?attr/shTextMuted</item>
+        <item name="colorPrimary">?attr/shAccent</item>
+        <item name="colorOutline">?attr/shLine</item>
+    </style>
+
+    <!-- ========== 组件样式（全部走令牌，不写死色值） ========== -->
+    <style name="Text.Title" parent="">
+        <item name="android:textColor">?attr/shText</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.04</item>
+    </style>
+
+    <style name="Text.Body" parent="">
+        <item name="android:textColor">?attr/shText</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineSpacingMultiplier">1.65</item>
+    </style>
+
+    <style name="Text.Muted" parent="">
+        <item name="android:textColor">?attr/shTextMuted</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="Text.Section" parent="">
+        <item name="android:textColor">?attr/shAccent</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.14</item>
+    </style>
+
+    <style name="Card.Ink" parent="Widget.Material3.CardView.Filled">
+        <item name="cardBackgroundColor">?attr/shCard</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeColor">?attr/shLine</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+
+    <style name="Button.Amber" parent="Widget.Material3.Button">
+        <item name="backgroundTint">?attr/shAccent</item>
+        <item name="android:textColor">?attr/shBg</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.06</item>
+    </style>
+
+    <style name="Button.Ghost" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">?attr/shLine</item>
+        <item name="android:textColor">?attr/shText</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+</resources>
