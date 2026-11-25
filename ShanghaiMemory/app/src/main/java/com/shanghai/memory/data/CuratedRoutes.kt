@@ -15,7 +15,7 @@ object CuratedRoutes {
         stops = listOf(
             RouteStop(
                 seq = 1,
-                name = "外滩·中山东一路",
+                name = "外滩 · 中山东一路",
                 area = "黄浦区",
                 stayMin = 30,
                 reason = "上海是中国最早用电的城市之一，1882 年这里的江岸亮起第一批电弧灯。",
@@ -39,7 +39,7 @@ object CuratedRoutes {
             ),
             RouteStop(
                 seq = 4,
-                name = "杨浦滨江·绿之丘",
+                name = "杨浦滨江 · 绿之丘",
                 area = "杨浦区",
                 stayMin = 40,
                 reason = "原烟草公司机修仓库改造而成，是滨江工业遗存转型的代表作。",
@@ -54,7 +54,7 @@ object CuratedRoutes {
                 storyHook = "一座停止发电的电厂，如何继续显示这座城市的体温。"
             )
         ),
-        transitionLogic = "外滩步行至南京东路站乘地铁 12 号线到宁国路，沿平凉路、杨树浦路南下串联杨浦滨江，最后在秦皇岛路渡口过江抵达当代艺术博物馆。",
+        transitionLogic = "外滩步行至南京东路站乘地铁 12 号线到宁国路，沿平凉路、杨树浦路南下串联杨浦滨江，最后经渡轮或地铁抵达当代艺术博物馆。",
         totalMin = 240
     )
 
@@ -104,14 +104,14 @@ object CuratedRoutes {
             ),
             RouteStop(
                 seq = 6,
-                name = "提篮桥·上海犹太难民纪念馆",
+                name = "提篮桥 · 上海犹太难民纪念馆",
                 area = "虹口区",
                 stayMin = 45,
                 reason = "摩西会堂 1927 年建成，1938 至 1941 年间两万余名犹太难民落脚于此，与本地居民共用弄堂。",
                 storyHook = "舟山路的晾衣杆与菜场，就是这段历史今天还在被使用的方式。"
             )
         ),
-        transitionLogic = "世博滨江步行串联前三站，苏州河沿线北上至四行仓库，经地铁 10 号线到虹口，再由 1933 老场坊沿江抵杨树浦，最后回到提篮桥。",
+        transitionLogic = "世博滨江步行串联前两站，北上至苏州河畔的四行仓库，经地铁 10 号线到虹口 1933 老场坊，再沿江抵杨树浦水厂，最后回到提篮桥。",
         totalMin = 300
     )
 

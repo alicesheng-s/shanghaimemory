@@ -20,6 +20,9 @@ import kotlin.coroutines.resume
  * 类型里必须带上「190000 地名地址」与「150000 交通设施」：站在一条马路或一栋老楼前时，
  * 高德往往只把它归到地名地址，原先的纯「景点/机构」分类查不到，就会退而返回几百米外的商场，
  * 于是出现「地点和地图上显示的对不上」。分类放宽后由距离分级（120 → 400 → 900 米）收敛。
+ *
+ * 所有 asyn 接口都套了超时：SDK 在无网、未初始化、key 校验失败时可能永不回调，
+ * 没有超时的 suspendCancellableCoroutine 会让整条调用链一直挂着。
  */
 class AmapService(context: Context) {
 
@@ -29,19 +32,24 @@ class AmapService(context: Context) {
         // 就会被同一栋楼里的公司、门店顶替，出现「地图显示医院、识别成公司」的错位
         private const val POI_TYPES =
             "190000|110000|090000|140000|120000|130000|150000|080000|060000"
+
+        /** 周边检索一次取满：候选池越大，距离分级收敛得越准 */
+        private const val NEARBY_PAGE_SIZE = 25
+
+        private const val NEARBY_TIMEOUT_MS = 8000L
+        private const val REGEO_TIMEOUT_MS = 6000L
+        private const val GEOCODE_TIMEOUT_MS = 4000L
+        private const val KEYWORD_TIMEOUT_MS = 8000L
     }
 
     private val ctx: Context = context.applicationContext
 
     suspend fun nearby(lat: Double, lng: Double, radius: Int = 900): List<PoiInfo> =
         withContext(Dispatchers.Main) {
-            val query = PoiSearch.Query("", POI_TYPES, CITY_CODE).apply {
-                pageSize = 25
-                pageNum = 1
-            }
-            newPoiSearch().let { search ->
-                search.bound = PoiSearch.SearchBound(LatLonPoint(lat, lng), radius, true)
-                val result = suspendCancellableCoroutine<PoiResult?> { cont ->
+            val search = newPoiSearch(NEARBY_PAGE_SIZE)
+            search.bound = PoiSearch.SearchBound(LatLonPoint(lat, lng), radius, true)
+            val result = withTimeoutOrNull(NEARBY_TIMEOUT_MS) {
+                suspendCancellableCoroutine<PoiResult?> { cont ->
                     search.setOnPoiSearchListener(object : PoiSearch.OnPoiSearchListener {
                         override fun onPoiSearched(r: PoiResult?, code: Int) {
                             if (cont.isActive) cont.resume(if (code == 1000) r else null)
@@ -51,38 +59,39 @@ class AmapService(context: Context) {
                     })
                     search.searchPOIAsyn()
                 }
-                val pois = result?.pois.orEmpty().mapNotNull { item ->
-                    val point = item.latLonPoint ?: return@mapNotNull null
-                    PoiInfo(
-                        name = item.title.orEmpty(),
-                        type = item.typeDes.orEmpty(),
-                        address = item.snippet.orEmpty(),
-                        district = item.cityName.orEmpty(),
-                        lat = point.latitude,
-                        lng = point.longitude,
-                        amapId = item.poiId,
-                        distanceMeters = item.distance
-                    )
-                }.filter { it.name.isNotBlank() }
-                pois
             }
+            result?.pois.orEmpty().mapNotNull { item ->
+                val point = item.latLonPoint ?: return@mapNotNull null
+                PoiInfo(
+                    name = item.title.orEmpty(),
+                    type = item.typeDes.orEmpty(),
+                    address = item.snippet.orEmpty(),
+                    district = districtOf(item),
+                    lat = point.latitude,
+                    lng = point.longitude,
+                    amapId = item.poiId,
+                    distanceMeters = item.distance
+                )
+            }.filter { it.name.isNotBlank() }
         }
 
     /** 逆地理：拿到「区 + 街道地址」，用于提示卡的第二行 */
     suspend fun regeocode(lat: Double, lng: Double): Pair<String, String> =
         withContext(Dispatchers.Main) {
             val search = GeocodeSearch(ctx)
-            val result = suspendCancellableCoroutine<RegeocodeResult?> { cont ->
-                search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
-                    override fun onRegeocodeSearched(r: RegeocodeResult?, code: Int) {
-                        if (cont.isActive) cont.resume(if (code == 1000) r else null)
-                    }
+            val result = withTimeoutOrNull(REGEO_TIMEOUT_MS) {
+                suspendCancellableCoroutine<RegeocodeResult?> { cont ->
+                    search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
+                        override fun onRegeocodeSearched(r: RegeocodeResult?, code: Int) {
+                            if (cont.isActive) cont.resume(if (code == 1000) r else null)
+                        }
 
-                    override fun onGeocodeSearched(r: com.amap.api.services.geocoder.GeocodeResult?, code: Int) = Unit
-                })
-                search.getFromLocationAsyn(
-                    RegeocodeQuery(LatLonPoint(lat, lng), 200f, GeocodeSearch.AMAP)
-                )
+                        override fun onGeocodeSearched(r: com.amap.api.services.geocoder.GeocodeResult?, code: Int) = Unit
+                    })
+                    search.getFromLocationAsyn(
+                        RegeocodeQuery(LatLonPoint(lat, lng), 200f, GeocodeSearch.AMAP)
+                    )
+                }
             }
             val addr = result?.regeocodeAddress
             val district = addr?.district.orEmpty()
@@ -97,7 +106,7 @@ class AmapService(context: Context) {
             val text = keyword.trim()
             if (text.isEmpty()) return@withContext null
             val search = GeocodeSearch(ctx)
-            val result = withTimeoutOrNull(4000) {
+            val result = withTimeoutOrNull(GEOCODE_TIMEOUT_MS) {
                 suspendCancellableCoroutine<com.amap.api.services.geocoder.GeocodeResult?> { cont ->
                     search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
                         override fun onRegeocodeSearched(r: RegeocodeResult?, code: Int) = Unit
@@ -130,7 +139,7 @@ class AmapService(context: Context) {
                 pageNum = 1
             }
             val search = PoiSearch(ctx, query)
-            val result = withTimeoutOrNull(8000) {
+            val result = withTimeoutOrNull(KEYWORD_TIMEOUT_MS) {
                 suspendCancellableCoroutine<PoiResult?> { cont ->
                     search.setOnPoiSearchListener(object : PoiSearch.OnPoiSearchListener {
                         override fun onPoiSearched(r: PoiResult?, code: Int) {
@@ -151,7 +160,7 @@ class AmapService(context: Context) {
                     name = item.title.orEmpty(),
                     type = item.typeDes.orEmpty(),
                     address = item.snippet.orEmpty(),
-                    district = item.cityName.orEmpty(),
+                    district = districtOf(item),
                     lat = point.latitude,
                     lng = point.longitude,
                     amapId = item.poiId,
@@ -160,4 +169,16 @@ class AmapService(context: Context) {
             }.filter { it.name.isNotBlank() }
         }
 
-    private fun newPoiSearch(): PoiSearch = PoiSearch(ctx, PoiSearch.Query("", POI_TYPES, CITY_CODE))}
+    /**
+     * 行政区用 adName：cityName 是整个「上海市」，放进「区」字段等于没填。
+     * 少数条目没有 adName，再退回 cityName 兜底。
+     */
+    private fun districtOf(item: com.amap.api.services.core.PoiItem): String =
+        item.adName.orEmpty().ifBlank { item.cityName.orEmpty() }
+
+    private fun newPoiSearch(pageSize: Int): PoiSearch =
+        PoiSearch(ctx, PoiSearch.Query("", POI_TYPES, CITY_CODE).apply {
+            this.pageSize = pageSize.coerceIn(1, 25)
+            pageNum = 1
+        })
+}

@@ -127,9 +127,13 @@ object ThemeEngine {
      * 其它（RippleDrawable、九宫格）原样保留，宁可不动也不弄花。
      */
     private fun recolorShape(view: View, colors: PaletteColors) {
+        // 上色时表面角色会被降不透明度，反查角色前先把 alpha 剥掉：
+        // 否则第二次换色板时认不出这属于哪个角色，控件会停在旧色板上
+        fun opaque(color: Int): Int = (color and 0x00FFFFFF) or 0xFF000000.toInt()
+
         val tintList = view.backgroundTintList
         if (tintList != null) {
-            val role = colors.roleOf(tintList.defaultColor) ?: return
+            val role = colors.roleOf(opaque(tintList.defaultColor)) ?: return
             val next = colors.colorOf(role)
             if (next != tintList.defaultColor) view.backgroundTintList = ColorStateList.valueOf(next)
             return
@@ -138,7 +142,7 @@ object ThemeEngine {
         if (bg !is GradientDrawable) return
         val drawable = DrawableCompat.wrap(bg).mutate() as? GradientDrawable ?: return
         val current = drawable.color?.defaultColor ?: return
-        val role = colors.roleOf(current) ?: return
+        val role = colors.roleOf(opaque(current)) ?: return
         drawable.setColor(withSurfaceAlpha(colors.colorOf(role), role))
         if (drawable.cornerRadius > 0f) {
             drawable.cornerRadius = view.resources.displayMetrics.density * ThemeState.cornerDp

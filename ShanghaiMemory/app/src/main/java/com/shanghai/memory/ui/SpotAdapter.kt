@@ -44,6 +44,8 @@ class SpotAdapter(
             binding.txtSpotDist.text = when {
                 dist.isNotBlank() -> "距你 $dist"
                 spot.located -> "已定位"
+                // 查过一轮仍没有坐标，就别再挂着「正在定位」骗人
+                spot.locateAttempted -> "未能定位"
                 else -> "正在定位…"
             }
             binding.txtSpotDist.setTextColor(colors.accentBright)

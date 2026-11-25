@@ -1,34 +1,35 @@
 # 不一样的上海记忆
 
-一个把「城市阅读」变成「边走边听故事」的 Android 应用。地图上停一手，附近的工业遗产、老厂房、水厂、仓库就会开口讲自己的来历——有据可查的部分讲证据，查不到的部分明确标「此事待考」。
+一个把「城市阅读」变成「边走边听故事」的 Android 应用。在地图上停下，附近的工业遗产、老厂房、水厂、仓库就会开口讲自己的来历——有据可查的部分讲证据，查不到的部分明确标「此事待考」。
 
-面向工业文化创新发展大赛 · 2026 人工智能未来设计赛（OPC 创新创业方向，AI+软件赛道）。
+面向工业文化创新发展大赛 · 2026 人工智能未来设计赛（OPC 创新创业方向，AI+软件赛道）。当前版本 0.7.0。
 
 ## 环境要求
 
-| 组件 | 版本 | 本机路径 |
+| 组件 | 版本 | 配置位置 |
 | --- | --- | --- |
-| JDK | 21（Temurin 21.0.13） | `E:\Tools\AndroidDev\jdk21\jdk-21.0.13+9` |
-| Android SDK | Platform 36 / Build-Tools 36.0.0 | `E:\Tools\AndroidDev\sdk` |
-| Gradle | 8.14.3 | `E:\Tools\AndroidDev\gradle-8.14.3` |
-| AGP / Kotlin | 8.13.2 / 2.2.20 | 由 wrapper 拉取 |
+| JDK | 21（Temurin 21） | 环境变量 `JAVA_HOME` |
+| Android SDK | Platform 36 / Build-Tools 36.0.0 | `local.properties` 的 `sdk.dir` |
+| Gradle | 8.14.3 | 工程自带 `gradlew` / `gradlew.bat` |
+| AGP / Kotlin | 8.13.2 / 2.2.20 | 由 wrapper 自动拉取 |
 
-工程自带 `gradlew`，换机器只需改 `local.properties` 里的 `sdk.dir`。
+工程自带 Gradle Wrapper，换机器只需改 `local.properties` 里的 `sdk.dir` 与 `AMAP_KEY`。
 
 ## 构建
 
 ```powershell
-$env:JAVA_HOME='E:\Tools\AndroidDev\jdk21\jdk-21.0.13+9'
-$env:ANDROID_HOME='E:\Tools\AndroidDev\sdk'
+# 换成你自己的 JDK 与 Android SDK 路径
+$env:JAVA_HOME='C:\path\to\jdk-21'
+$env:ANDROID_HOME='C:\path\to\android-sdk'
 .\gradlew.bat assembleDebug
 ```
 
 产物：`app\build\outputs\apk\debug\app-debug.apk`（约 78 MB，含 arm64-v8a 与 armeabi-v7a 两套高德 so；只留 arm64 可压到约 47 MB，改 `app/build.gradle.kts` 的 `abiFilters`）。
 
-安装：
+安装到设备：
 
 ```powershell
-E:\Tools\AndroidDev\sdk\platform-tools\adb.exe install -r app-debug.apk
+adb install -r app\build\outputs\apk\debug\app-debug.apk
 ```
 
 ## 两把 Key
@@ -36,9 +37,7 @@ E:\Tools\AndroidDev\sdk\platform-tools\adb.exe install -r app-debug.apk
 **高德地图 Key（必需，决定地图能不能出图）**
 
 1. 打开 https://console.amap.com/dev/key/app ，用高德开放平台账号建应用。
-2. 添加 Key：服务平台选 **Android 平台**，Package Name 填 `com.shanghai.memory`，SHA1 填
-   `54:D3:A0:68:09:C3:00:AD:5C:DD:1E:50:2E:8A:14:AE:D2:8D:47:F7`
-   （本机 debug 签名证书 `C:\Users\peter\.android\debug.keystore` 的指纹）。
+2. 添加 Key：服务平台选 **Android 平台**，Package Name 填 `com.shanghai.memory`，SHA1 填你本机签名证书的指纹（`keytool -list -v -keystore %USERPROFILE%\.android\debug.keystore -alias androiddebugkey -storepass android` 可查）。
 3. 拿到 32 位 Key 后写进 `local.properties`：
 
 ```
@@ -55,7 +54,7 @@ App 内「设置」页填写，只写入本机 DataStore，不上传、不打日
 | --- | --- | --- |
 | DeepSeek | `deepseek-flash` | 官方 Search API |
 | 智谱 GLM | `glm-4-flash` | 官方 Web Search API |
-| Kimi | `moonshot-v1-8k` | 无，纯对话降级 |
+| Kimi / Moonshot | `moonshot-v1-32k` | 无，纯对话降级 |
 | 自定义 | 自填 | 可选自定义检索端点 |
 
 「测试连接」会真实发一次请求，并显示 **首字延迟 / 总耗时**，直接对应「首字 ≤ 3s」这条指标。
@@ -65,6 +64,7 @@ App 内「设置」页填写，只写入本机 DataStore，不上传、不打日
 | 需求 | 实现位置 | 说明 |
 | --- | --- | --- |
 | F1 地图漫游 | `ui/MapActivity.kt` + `data/AmapService.kt` | 固定中心游标贴图，拖动地图 400 ms 去抖后检索周边 POI，取最近一处并逆地理编码补区名地址 |
+| F1 地标准入 | `data/LandmarkGate.kt` + `data/GatePolicy.kt` | 门店、地铁公交、纯住宅这类噪音 POI 在进故事之前就被挡掉，并给出挡掉的理由，避免拿一个便利店硬讲历史 |
 | F1 故事流式生成 | `ui/ChatActivity.kt`（地点讲述通道）+ `data/StoryRepository.kt` | 检索 → 生成两段式，逐字上屏，资料出处单列；输出落在常驻会话里，退出界面不丢 |
 | F2 游览路线 | `ui/RouteActivity.kt` → `ui/ChatActivity.kt`（行程策划通道）→ `ui/MapActivity.kt` | 选预设或写主题进对话，AI 先告知联网状态、再问备注，据此重排路线；方案回到地图画线，定位跟着走，走进 80 m 提示到达 |
 | F3 BYOK | `ui/SettingsActivity.kt` + `data/SettingsStore.kt` + `data/llm/ModelCatalog.kt` | Key 存 DataStore；可测连通性；可一键拉取该 Key 下可用模型 |
@@ -78,27 +78,36 @@ App 内「设置」页填写，只写入本机 DataStore，不上传、不打日
 app/src/main/java/com/shanghai/memory/
 ├── App.kt                     高德隐私合规初始化 + 启动时恢复配色
 ├── data/
-│   ├── SettingsStore.kt       DataStore 配置（Key / 服务商 / 配色 / TTS）
+│   ├── SettingsStore.kt       DataStore 配置（Key / 服务商 / 配色 / TTS / 引导标记）
 │   ├── PromptTemplates.kt     P1' / P2 提示词与四段输出约束
 │   ├── StoryRepository.kt     检索 + 生成编排
 │   ├── RouteRepository.kt     路线生成、JSON 容错解析、站点坐标补齐
 │   ├── RouteSession.kt        当前路线与已到访站点
 │   ├── ChatStore.kt           两条常驻会话 + 进程级生成作用域
-│   ├── TtsSpeaker.kt          朗读
+│   ├── TtsSpeaker.kt          朗读（主线程回调、长文分段）
+│   ├── JsonExt.kt             org.json 取值扩展，避免裸 null 变成字符串 "null"
+│   ├── LandmarkGate.kt        地标准入：哪些 POI 值得讲、哪些是门店与交通设施
+│   ├── GatePolicy.kt          准入策略（严格模式 / 公共机构 / 商业筛选开关）
+│   ├── TopicRouting.kt        主题识别与检索式装饰（站点限定 + 时间窗）
+│   ├── SpotCandidate.kt       候选点位（未定位 / 已定位 / 定位失败三态）
+│   ├── CuratedSpots.kt        手工策展的 16 个点位
 │   ├── CuratedStories.kt      离线策展故事
 │   ├── CuratedRoutes.kt       预置路线
 │   ├── AmapService.kt         POI 检索 / 逆地理编码 / 地理编码
+│   ├── LocationHolder.kt      最近一次定位的进程内共享
 │   ├── llm/ChatClient.kt      OpenAI 兼容 SSE 流式客户端（支持多轮）
 │   ├── llm/SearchClient.kt    联网检索（DeepSeek / 智谱 / 自定义）
 │   ├── llm/ModelCatalog.kt    GET /models 拉取可用模型
 │   └── model/                 PoiInfo / SearchHit / RoutePlan / ProviderProfile
 └── ui/
-    ├── theme/                 配色令牌、三套色板、ThemedActivity
+    ├── theme/                 配色令牌、三套色板、ThemedActivity、主题引擎与动效
     ├── render/MarkdownLite.kt 容错渲染（吃掉 ** ## - 这类记号）
     ├── MapActivity.kt         地图漫游 + 路线向导
     ├── ChatActivity.kt        地点讲述 / 行程策划两条会话
     ├── ChatAdapter.kt         消息列表
     ├── RouteActivity.kt       路线入口
+    ├── SpotAdapter.kt         候选点位列表
+    ├── OnboardingActivity.kt  五页新手指引
     └── SettingsActivity.kt    设置
 ```
 
@@ -392,3 +401,28 @@ Android 11 起应用默认只能看见自己声明过的包。`targetSdk` 已经
 - 色板预览的三个圆点在 `ThemeEngine` 里会按角色反查而被统一成当前主题色，所以给它们打了 `tag="sh:keep_color"`，`recolorTextView` 见到这个 tag 就跳过换色——顺手也给以后「品牌色 / 固定色块」留了入口。
 
 真机验证（Redmi K80）：清数据后首启自动进引导；五页翻页与指示点正常；第三页点「樱花粉」整个引导页立即变粉；第 5 页「开始使用」后回地图，地图也是粉主题；进设置一级菜单点「新手指引」能重开。
+
+## 0.7.1 版
+
+外部代码审查提了 16 条问题，逐条对照源码核过：12 条成立，4 条是审查者引用错了代码（`MarkdownLite` 的有序列表正则实际是 `^(\d{1,2})[.)、]`、不含逗号；`App.kt` 并没有未使用的 import；「中华艺术宫」不带括号，碰不到门店正则；门店正则本来就同时排除了中英文括号）。成立的已全部修掉，`assembleDebug` 通过。
+
+| 项 | 根因 | 改法 |
+| --- | --- | --- |
+| 路线跳过第一站、终点反复弹提示 | `RouteSession` 用 0 表示「刚到起点」，`nextIndex()` 第一次就返回 1；终点又被 `coerceAtMost(size-1)` 锁死 | 内部改用 -1 表示一站未走，走完返回 -1，`markVisited` 只前进不回退 |
+| 正文偶发出现「null」 | org.json 的 `optString` 对 JSON 裸 null 返回字符串 `"null"` | 新增 `data/JsonExt.kt` 的 `text()` 扩展，判过 `isNull` 再取值；聊天、检索、路线解析统一改用它 |
+| 朗读偶发 `CalledFromWrongThreadException` | TTS 的 `onStateChanged`、`onDone` 跑在 Binder 线程，UI 直接改控件 | `TtsSpeaker` 内部统一切主线程；顺势修掉初始化同步回调丢 engine、失败后永久卡 pending、长文超过 4000 字不分段 |
+| 生成中切会话，内容写进另一条 | 协程闭包里直接读可变的 `channel` 字段 | `startStory` / `followUp` / `replan` 一律在启动协程之前捕获 `owner` |
+| 外观页改完点保存没反应 | 保存被「先填 API Key」无条件拦截 | 只在模型子页拦截，其余子页照常保存 |
+| 回填开关会重复写盘 | 回填 `isChecked` 触发监听器 | 加 `suppressToggle` 守卫 |
+| 引导页输的 Key 偶尔没存上 | 写 Key 与 `finish()` 在两个协程里抢跑 | 合成一个协程顺序执行 |
+| 门店被当成地标、地铁站被放行 | 门店正则把「(馆)」也当门店，严格模式又排在硬拦截之前 | 门店词收窄为「店 / 铺 / 专柜 / 门市」，硬拦截提到严格模式之前，交通设施补入噪音词，`refusalReason` 补上「门店」这一档 |
+| 周边检索只拿回默认条数 | 构造好的 `PoiSearch.Query` 被丢弃，内部又新建了一个无参的 | `newPoiSearch(pageSize)` 带参；周边与关键词检索补超时；`district` 改用 `adName` |
+| 检索式重复拼站点、资料编号从 2 起 | `recentActivityQuery` 已经 decorate 过，`SearchClient` 又 decorate 一次；`toPromptBlock(index+1)` 与内部的 `index+1` 叠乘 | 只在一处 decorate，时间窗尾巴预留长度；编号改传 `index` |
+| 模型输出被截断时一个点都拿不到 | `parseSpots` 遇到无闭合 `}` 直接返回空，没走 salvage | 截断时走 `salvageSpots` 抢救 |
+| 定位失败的点永远显示「正在定位…」 | 只有已定位与未定位两态 | `SpotCandidate` 加 `locateAttempted`，失败显示「未能定位」，检索优先用 `CuratedSpot.searchKey` |
+| 调不透明度后主题色反查失败 | `recolorShape` 写回带 alpha 的颜色，下次 `roleOf` 认不出 | 反查前先把颜色还原成不透明 |
+| 切页动画被 `GONE` 打断 | 调用方在 `slideOutPage` 之后立刻遍历设 `GONE` | 交给 `withEndAction`，只处理目标页与其余页 |
+| 导入字体中断留下坏文件 | 拷贝失败时半截 `imported.ttf` 还在，下次启动被当成有效字体 | 失败即删除 |
+| 零星工程细节 | `RouteActivity` 没覆写返回键；`currentInput()` 漏四个字段 | 按层级返回；补齐 `customSearchUrl`、`temperature`、`surfaceAlpha`、`onboarded` |
+
+文本同时做了一轮史实勘误：「南市发电厂 1897 年点亮上海第一盏电灯」改为「源起 1897 年华商自办的南市电灯厂」（上海第一盏电灯是 1882 年）；四行仓库补全金城、中南、大陆、盐业四家银行；杨树浦水厂统一为 1883 年 8 月 1 日正式通水；1933 老场坊设计方由「公和洋行」改为建筑师巴尔弗斯；世博场馆正名为「城市未来馆」；「法新租界」改为「法租界」；曹杨新村由「1951 年建成」改为「1951 年动工兴建」；工业之旅的步行串联由「前三站」改为「前两站」。

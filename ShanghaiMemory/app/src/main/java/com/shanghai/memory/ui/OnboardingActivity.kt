@@ -64,10 +64,19 @@ class OnboardingActivity : ThemedActivity() {
 
     private fun applyPage(target: Int, animate: Boolean) {
         val old = page
-        if (animate && target != old) {
+        val moving = animate && target != old
+        if (moving) {
             ThemeFx.slideOutPage(pages()[old - 1], forward = target > old)
         }
-        pages().forEachIndexed { i, v -> v.visibility = if (i == target - 1) View.VISIBLE else View.GONE }
+        pages().forEachIndexed { i, v ->
+            when {
+                i == target - 1 -> v.visibility = View.VISIBLE
+                // 正在滑出的那一页交给动画的收尾动作去隐藏。
+                // 这里抢先设 GONE，等于把还没播完的退场动画直接掐掉
+                moving && i == old - 1 -> Unit
+                else -> v.visibility = View.GONE
+            }
+        }
         page = target
         if (animate) ThemeFx.slideInPage(pages()[target - 1], forward = target > old)
 
@@ -187,8 +196,12 @@ class OnboardingActivity : ThemedActivity() {
     // ---- 收尾 ----
 
     private fun finishTutorial() {
-        saveKeyIfAny()
+        // 这里原先开了两条协程：一条写 Key，一条写 onboarded 后立刻 finish()。
+        // finish() 会取消 lifecycleScope 里没跑完的协程，Key 就被随机丢掉了。
+        // 现在串成一条链：写 Key → 写标记 → 关页，顺序确定。
+        val key = binding.etKey.text?.toString()?.trim().orEmpty()
         lifecycleScope.launch {
+            if (key.isNotEmpty()) store.setApiKey(key)
             store.setOnboarded(true)
             finish()
         }

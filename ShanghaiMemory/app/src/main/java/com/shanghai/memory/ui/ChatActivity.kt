@@ -330,12 +330,15 @@ class ChatActivity : ThemedActivity() {
             )
             return
         }
+        // 协程跑起来之后用户可能切到另一条会话。这里先把归属固定下来，
+        // 否则正文会写进新会话，而原会话的 streaming 标记永远停在 true
+        val owner = channel
         ChatWorker.scope.launch {
             val settings = store.current()
-            ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.SYSTEM, guidance(settings)))
-            ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.USER, "讲讲这里：${place.name}"))
+            ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.SYSTEM, guidance(settings)))
+            ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, "讲讲这里：${place.name}"))
             val id = ChatStore.add(
-                channel,
+                owner,
                 ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在检索公开资料…")
             )
             beginStage(id, "正在检索公开资料…")
@@ -346,10 +349,10 @@ class ChatActivity : ThemedActivity() {
                         is StoryEvent.Phase -> {
                             val base = stageOf(event.phase)
                             updateStageBase(id, base)
-                            ChatStore.update(channel, id) { it.copy(stage = base) }
+                            ChatStore.update(owner, id) { it.copy(stage = base) }
                         }
 
-                        is StoryEvent.Sources -> ChatStore.update(channel, id) {
+                        is StoryEvent.Sources -> ChatStore.update(owner, id) {
                             it.copy(sources = event.hits)
                         }
 
@@ -366,14 +369,14 @@ class ChatActivity : ThemedActivity() {
                             if (firstChunk) {
                                 firstChunk = false
                                 endStage(id)
-                                ChatStore.update(channel, id) { it.copy(stage = "") }
+                                ChatStore.update(owner, id) { it.copy(stage = "") }
                             }
-                            ChatStore.appendText(channel, id, event.text)
+                            ChatStore.appendText(owner, id, event.text)
                         }
 
                         is StoryEvent.Curated -> {
                             endStage(id)
-                            ChatStore.update(channel, id) {
+                            ChatStore.update(owner, id) {
                                 it.copy(
                                     text = it.text.ifBlank { event.text },
                                     sources = emptyList(),
@@ -385,14 +388,14 @@ class ChatActivity : ThemedActivity() {
 
                         is StoryEvent.Done -> {
                             endStage(id)
-                            ChatStore.update(channel, id) {
+                            ChatStore.update(owner, id) {
                                 it.copy(streaming = false, stage = "")
                             }
                         }
 
                         is StoryEvent.Failed -> {
                             endStage(id)
-                            ChatStore.update(channel, id) {
+                            ChatStore.update(owner, id) {
                                 it.copy(
                                     text = if (it.text.isBlank()) event.message else it.text + "\n\n" + event.message,
                                     streaming = false,
@@ -407,7 +410,7 @@ class ChatActivity : ThemedActivity() {
                 throw c
             } catch (t: Throwable) {
                 endStage(id)
-                ChatStore.update(channel, id) {
+                ChatStore.update(owner, id) {
                     it.copy(
                         text = it.text.ifBlank { "讲述失败：${t.message}" },
                         streaming = false,
@@ -463,11 +466,13 @@ class ChatActivity : ThemedActivity() {
             ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.SYSTEM, "还没有选中的地点，先回地图选一个。"))
             return
         }
+        // 同上：协程里的写入必须落在发起时的那条会话上
+        val owner = channel
         val history = historyTurns()
         val draft = draftText()
-        ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.USER, question))
+        ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, question))
         val id = ChatStore.add(
-            channel,
+            owner,
             ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在回答…")
         )
         beginStage(id, "正在回答…")
@@ -475,7 +480,7 @@ class ChatActivity : ThemedActivity() {
             val settings = store.current()
             if (!settings.hasKey) {
                 endStage(id)
-                ChatStore.update(channel, id) {
+                ChatStore.update(owner, id) {
                     it.copy(
                         text = "还没配置 API Key，回答不了。到设置里填一个再回来。",
                         streaming = false,
@@ -500,16 +505,16 @@ class ChatActivity : ThemedActivity() {
                     if (firstChunk) {
                         firstChunk = false
                         endStage(id)
-                        ChatStore.update(channel, id) { it.copy(stage = "") }
+                        ChatStore.update(owner, id) { it.copy(stage = "") }
                     }
-                    ChatStore.appendText(channel, id, chunk)
+                    ChatStore.appendText(owner, id, chunk)
                 }
-                ChatStore.update(channel, id) { it.copy(streaming = false, stage = "") }
+                ChatStore.update(owner, id) { it.copy(streaming = false, stage = "") }
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {
                 endStage(id)
-                ChatStore.update(channel, id) {
+                ChatStore.update(owner, id) {
                     it.copy(
                         text = it.text.ifBlank { "请求失败：${t.message}" },
                         streaming = false,
@@ -523,9 +528,10 @@ class ChatActivity : ThemedActivity() {
 
     private fun replan(notes: String) {
         val name = planName.ifBlank { "上海城市漫游" }
-        ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.USER, notes))
+        val owner = channel
+        ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, notes))
         val id = ChatStore.add(
-            channel,
+            owner,
             ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在重排站点与停留时间…")
         )
         beginStage(id, "正在重排站点与停留时间…")
@@ -536,14 +542,14 @@ class ChatActivity : ThemedActivity() {
                 val plan = repo.locate(raw)
                 RouteSession.set(plan)
                 endStage(id)
-                ChatStore.update(channel, id) {
+                ChatStore.update(owner, id) {
                     it.copy(text = renderPlan(plan), streaming = false, stage = "", plan = plan)
                 }
             } catch (c: CancellationException) {
                 throw c
             } catch (t: Throwable) {
                 endStage(id)
-                ChatStore.update(channel, id) {
+                ChatStore.update(owner, id) {
                     it.copy(
                         text = it.text.ifBlank { "这套方案没排出来：${t.message}" },
                         streaming = false,

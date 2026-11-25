@@ -74,13 +74,23 @@ object TopicRouting {
     /**
      * 「最近的活动」查询：用 after: 把时间窗压到最近八个月，
      * 免得模型拿三年前已结束的展览当近况。
+     *
+     * 这里只拼语义，不拼 site: 约束——站点由 SearchClient.search 统一 decorate。
+     * 早先两边各拼一次，query 里出现两组 (site:…) 括号，长度超限后 decorate 的截断
+     * 还会把末尾的 after: 切掉，时间窗直接失效。
      */
     fun recentActivityQuery(keywords: String, monthsBack: Long = 8): String {
         val since = java.time.LocalDate.now().minusMonths(monthsBack).toString().take(7)
+        val tail = " after:$since"
         val head = "${keywords.ifBlank { "上海" }} 上海 活动 展览 演出"
-        return decorate("$head after:$since", Topic.SCENERY).take(MAX_QUERY)
+        // 给 decorate 的 site: 括号留出空间，同时保证 after: 一定留在 128 字以内
+        val room = (MAX_QUERY - SITE_RESERVE - tail.length).coerceAtLeast(1)
+        return (head.take(room) + tail).trim()
     }
 
     /** 接口限制：query 最短 1 字、最长 128 字 */
     private const val MAX_QUERY = 128
+
+    /** decorate 拼 (site:a OR site:b) 时预留的字符数，与 decorate 里的裁剪口径保持一致 */
+    private const val SITE_RESERVE = 32
 }

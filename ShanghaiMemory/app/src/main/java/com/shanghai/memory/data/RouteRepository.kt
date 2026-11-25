@@ -84,8 +84,10 @@ class RouteRepository(
             topic = topic
         )
         if (hits.isEmpty()) return ""
+        // toPromptBlock 内部会补 1（见 Models.kt），这里必须传 0 起算的下标，
+        // 否则资料编号会从［资料 2］开始
         return hits.take(5)
-            .mapIndexed { index, hit -> hit.toPromptBlock(index + 1) }
+            .mapIndexed { index, hit -> hit.toPromptBlock(index) }
             .joinToString("\n")
     }
 
@@ -158,7 +160,10 @@ class RouteRepository(
         val text = stripFence(raw)
         val start = text.indexOf('{')
         val end = text.lastIndexOf('}')
-        if (start < 0 || end <= start) return emptyList()
+        // 输出被截断时可能一个右括号都没有。这时候不能直接放弃：
+        // 下面 salvageSpots 仍能把已经写完整的对象捞回来，与 parse 的处理保持一致
+        if (start < 0) return salvageSpots(text)
+        if (end <= start) return salvageSpots(text.substring(start))
         val body = text.substring(start, end + 1)
         val array = runCatching {
             JSONObject(body).optJSONArray("spots")
@@ -166,13 +171,13 @@ class RouteRepository(
         val list = ArrayList<SpotCandidate>()
         for (i in 0 until array.length()) {
             val o = array.optJSONObject(i) ?: continue
-            val name = o.optString("name").trim()
+            val name = o.text("name").trim()
             if (name.isBlank()) continue
             list.add(
                 SpotCandidate(
                     name = name,
-                    area = o.optString("area").trim(),
-                    blurb = o.optString("blurb").trim()
+                    area = o.text("area").trim(),
+                    blurb = o.text("blurb").trim()
                 )
             )
         }
@@ -213,13 +218,17 @@ class RouteRepository(
         spots.map { spot ->
             async {
                 if (spot.located) return@async spot
-                val keyword = listOf("上海", spot.area, spot.name)
+                // 策展库给重名地点留了 searchKey（把区写进检索词的那种），优先用它：
+                // 直接拿名字去编码，常被小区、写字楼里的同名门店抢走
+                val keyword = listOf("上海", spot.area, spot.searchKey.ifBlank { spot.name })
                     .filter { it.isNotBlank() }
                     .joinToString(" ")
                 val point = service.geocode(keyword)
                     ?: service.searchByKeyword(spot.name, limit = 1).firstOrNull()
                         ?.let { it.lat to it.lng }
-                if (point == null) spot else spot.locatedAt(point.first, point.second)
+                // 查过一轮仍没有坐标：记下这次尝试，界面才会显示「未能定位」而不是一直转圈
+                if (point == null) spot.copy(locateAttempted = true)
+                else spot.locatedAt(point.first, point.second)
             }
         }.awaitAll().map { spot ->
             if (fromLat == 0.0 && fromLng == 0.0) spot else spot.withDistance(fromLat, fromLng)

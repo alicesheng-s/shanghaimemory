@@ -2,6 +2,7 @@ package com.shanghai.memory.data.llm
 
 import com.shanghai.memory.data.AppSettings
 import com.shanghai.memory.data.model.ThinkingStyle
+import com.shanghai.memory.data.text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
@@ -169,9 +170,10 @@ class ChatClient(private val http: OkHttpClient = Http.client) {
                             .optJSONArray("choices")
                             ?.optJSONObject(0)
                             ?.optJSONObject("delta")
-                        val content = d?.optString("content").orEmpty()
-                        val reasoning = d?.optString("reasoning_content").orEmpty()
-                            .ifEmpty { d?.optString("reasoning").orEmpty() }
+                        // 用 text 而不是 optString：显式 null 会被 optString 变成字符串 "null"
+                        val content = d?.text("content").orEmpty()
+                        val reasoning = d?.text("reasoning_content").orEmpty()
+                            .ifEmpty { d?.text("reasoning").orEmpty() }
                         content to reasoning
                     }.getOrElse { "" to "" }
                     if (parsed.second.isNotEmpty()) onReasoning?.invoke(parsed.second)

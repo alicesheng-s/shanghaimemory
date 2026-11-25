@@ -9,7 +9,10 @@ import com.shanghai.memory.data.model.PoiInfo
  * 大模型照样老老实实联网检索，然后把这家车行的工商注册地址当成「历史」讲了出来。
  * 入口不筛，模型再准也会跑偏——所以这里加一道闸门。
  *
- * 判定顺序：自定义关键词 → 严格模式 → 永远拒绝的词 → 商业词 → 公共机构类型 → 历史词 → 楼盘词 → 类型。
+ * 判定顺序：门店后缀 → 自定义关键词 → 永远拒绝的词 → 严格模式 → 商业词 → 公共机构类型
+ * → 历史词 → 楼盘词 → 类型。
+ * 「永远拒绝」必须排在严格模式之前：否则「静安寺地铁站」这类名字含 [STRICT_HINTS] 里「寺」的
+ * 噪音点，一进严格模式就被当成老建筑放行。
  * 每一档都由 [GatePolicy] 决定松紧，默认配置等价于 0.3.3 的行为。
  */
 object LandmarkGate {
@@ -25,7 +28,9 @@ object LandmarkGate {
         "服务站", "政务", "派出所", "警务室", "居委会", "党群", "城管", "消防站",
         "监督所", "工商所", "税务", "街道办", "办事处", "管理局", "服务中心",
         // 现代路口与立交没有记忆，只有坐标
-        "交叉口", "路口", "立交", "交叉", "出入口", "闸口", "隧道", "高架"
+        "交叉口", "路口", "立交", "交叉", "出入口", "闸口", "隧道", "高架",
+        // 交通节点同理：「静安寺地铁站」不是静安寺
+        "地铁", "公交站", "公交枢纽", "轮渡站"
     )
 
     /** 商业主体词：打开「公司门店也算」之后才放行 */
@@ -59,8 +64,12 @@ object LandmarkGate {
         "饭店", "旅馆", "客栈", "书院", "印书局"
     )
 
-    /** 「来伊份(汾西路三店)」这种门店名，括号里写着分店，直接判负 */
-    private val STORE_NAME = Regex("[（(][^）)]{0,20}(店|铺|部|馆)[）)]")
+    /**
+     * 「来伊份(汾西路三店)」这种门店名，括号里写着分店，直接判负。
+     * 字符组只收真正的零售后缀：早先还收着「馆」「部」，把「上海博物馆(东馆)」
+     * 「上海图书馆(东馆)」这类正经场馆一起误杀了。
+     */
+    private val STORE_NAME = Regex("[（(][^）)]{0,20}(店|铺|专柜|门市)[）)]")
 
     /** 新建楼盘与商业体的通用尾词：高德常把它们标成「风景名胜」，但它们没有历史 */
     private val REAL_ESTATE = listOf(
@@ -93,13 +102,14 @@ object LandmarkGate {
         // 1. 用户自己写下的关键词，优先级最高：他比任何规则都清楚自己想看什么
         if (policy.keywords.any { name.contains(it) }) return true
 
-        // 2. 严格模式：只认老建筑，宁可漏
+        // 2. 日常消费与办事机构，怎么设置都拒。
+        //    必须排在严格模式之前，否则「静安寺地铁站」会被 STRICT_HINTS 的「寺」放行
+        if (BLOCK_ALWAYS.any { name.contains(it) }) return false
+
+        // 3. 严格模式：只认老建筑，宁可漏
         if (policy.strictOnly) return STRICT_HINTS.any { name.contains(it) }
 
         val category = categoryOf(poi.type)
-
-        // 3. 日常消费与办事机构，怎么设置都拒
-        if (BLOCK_ALWAYS.any { name.contains(it) }) return false
 
         // 4. 商业主体：默认拒，用户明确要求时放行
         if (!policy.allowBusiness && BLOCK_BUSINESS.any { name.contains(it) }) return false
@@ -165,6 +175,7 @@ object LandmarkGate {
     /**
      * 给界面用的解释：为什么这里没得讲。
      * 只说「这里没有可讲述的地标」，用户只会觉得软件坏了——必须告诉他拦在哪一条上。
+     * 分支顺序要和 [isWorthTelling] 的判定顺序对齐，否则理由会说错一条。
      */
     fun refusalReason(poi: PoiInfo, policy: GatePolicy = GatePolicy()): String {
         val name = poi.name
@@ -172,12 +183,13 @@ object LandmarkGate {
         val label = category.ifBlank { "场所" }
         return when {
             name.length > 18 -> "「${name.take(12)}…」是机构全称，不像一处具体的地标"
+            STORE_NAME.containsMatchIn(name) -> "「$name」是带门店后缀的商铺，没有公共历史可讲"
+            BLOCK_ALWAYS.any { name.contains(it) } -> "「$name」是日常消费、办事或交通节点，没有公共历史可讲"
             policy.strictOnly -> "「$name」不在历史建筑名单里，严格模式已开启"
             !policy.allowPublicInstitution && category in PUBLIC_INSTITUTION ->
                 "「$name」属于$label，你关掉了「医院学校机关」"
             !policy.allowBusiness && BLOCK_BUSINESS.any { name.contains(it) } ->
                 "「$name」是商业场所，可在设置里打开「公司门店也算」"
-            BLOCK_ALWAYS.any { name.contains(it) } -> "「$name」是日常消费或办事场所，没有公共历史可讲"
             REAL_ESTATE.any { name.contains(it) } -> "「$name」是新建楼盘或商业体，没有年份可讲"
             else -> "「$name」是$label，不属于可讲述的地点"
         }

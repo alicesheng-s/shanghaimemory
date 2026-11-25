@@ -56,6 +56,9 @@ class SettingsActivity : ThemedActivity() {
     /** 当前显示的子页，菜单页专项返回键要先退回菜单再退出 */
     private var currentPage = PAGE_MENU
 
+    /** 回填开关状态同样会触发监听器：这时候不该当成用户操作再写一遍盘 */
+    private var suppressToggle = false
+
     /** 当前的落盘外观，改任一项都在它基础上推一次 */
     private var appearance: AppSettings = AppSettings()
 
@@ -148,14 +151,17 @@ class SettingsActivity : ThemedActivity() {
         })
 
         binding.swTts.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
             lifecycleScope.launch { store.setTtsEnabled(checked) }
         }
 
         // 地标筛选：三个开关即时生效，关掉地图页会自己刷新策略
         binding.swPublicInstitution.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
             lifecycleScope.launch { store.setAllowPublicInstitution(checked) }
         }
         binding.swBusiness.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
             lifecycleScope.launch {
                 store.setAllowBusiness(checked)
                 // 互斥：放行商业场所就退出严格模式，界面跟着走
@@ -163,6 +169,7 @@ class SettingsActivity : ThemedActivity() {
             }
         }
         binding.swStrict.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
             lifecycleScope.launch {
                 store.setStrictOnly(checked)
                 if (checked) binding.swBusiness.isChecked = false
@@ -214,11 +221,14 @@ class SettingsActivity : ThemedActivity() {
         binding.etApikey.setText(settings.apiKey)
         binding.etModel.setText(settings.model)
         binding.etBaseurl.setText(settings.baseUrl)
+        // 回填会触发上面那几个监听器：不当成用户操作，否则会把同样的值再写一遍盘
+        suppressToggle = true
         binding.swSearch.isChecked = settings.webSearchEnabled
         binding.swTts.isChecked = settings.ttsEnabled
         binding.swPublicInstitution.isChecked = settings.allowPublicInstitution
         binding.swBusiness.isChecked = settings.allowBusiness
         binding.swStrict.isChecked = settings.strictOnly
+        suppressToggle = false
         binding.etKeywords.setText(settings.extraKeywords)
         binding.sbTtsSpeed.progress = progressOf(settings.ttsSpeed)
         showSpeed(settings.ttsSpeed)
@@ -527,9 +537,9 @@ class SettingsActivity : ThemedActivity() {
     /** 把选中的字体文件复制到应用私有目录；系统授权只是临时读权限，不能直接引用 */
     private fun importFont(uri: Uri) {
         lifecycleScope.launch {
+            val dir = File(filesDir, "fonts").apply { mkdirs() }
+            val dest = File(dir, "imported.ttf")
             val copied = runCatching {
-                val dir = File(filesDir, "fonts").apply { mkdirs() }
-                val dest = File(dir, "imported.ttf")
                 contentResolver.openInputStream(uri)?.use { input ->
                     // 上限 20MB：字体本身就几百 KB 到几 MB，超了多半是选错文件，
                     // 不设上限等于让一次误操作把私有目录撑爆。
@@ -546,6 +556,9 @@ class SettingsActivity : ThemedActivity() {
                     }
                 } ?: error("无法读取所选文件")
                 dest
+            }.onFailure {
+                // 中途失败会留下写了一半的 imported.ttf，下次启动会被当成有效字体加载
+                runCatching { dest.delete() }
             }
             copied.onSuccess { file ->
                 AppFonts.of(this@SettingsActivity).clear()
@@ -669,13 +682,22 @@ class SettingsActivity : ThemedActivity() {
             cornerDp = binding.sbCorner.progress,
             fontId = font.key,
             fontScale = scaleOf(binding.sbFontScale.progress),
-            importedFontPath = appearance.importedFontPath
+            importedFontPath = appearance.importedFontPath,
+            // 下面几项界面上没有对应控件，沿用当前快照。
+            // 漏掉它们的话，任何拿 draft 整体覆盖的调用都会把检索端点、温度、
+            // 背景透明度、引导完成标记悄悄重置成默认值
+            customSearchUrl = appearance.customSearchUrl,
+            temperature = appearance.temperature,
+            surfaceAlpha = appearance.surfaceAlpha,
+            onboarded = appearance.onboarded
         )
     }
 
     private fun save() {
         val draft = currentInput()
-        if (draft.apiKey.isBlank()) {
+        // Key 只决定聊天与检索能不能用，不该拦住外观、朗读、地标筛选这些页面的保存：
+        // 早先这里无条件 return，用户在别的子页点保存会静默失败，还以为已经存上了
+        if (draft.apiKey.isBlank() && currentPage == PAGE_MODEL) {
             binding.txtStatus.text = "先填 API Key，再保存。"
             return
         }
@@ -688,7 +710,11 @@ class SettingsActivity : ThemedActivity() {
             store.setTtsSpeed(draft.ttsSpeed)
             // 关键词框可能一直没失焦，保存时再兜一次
             store.setExtraKeywords(draft.extraKeywords)
-            binding.txtStatus.text = "已保存到本机。Key 仅存于本应用的 DataStore。"
+            binding.txtStatus.text = if (draft.apiKey.isBlank()) {
+                "已保存。还没填 API Key，聊天与检索暂时不可用。"
+            } else {
+                "已保存到本机。Key 仅存于本应用的 DataStore。"
+            }
             Toast.makeText(this@SettingsActivity, "已保存", Toast.LENGTH_SHORT).show()
         }
     }

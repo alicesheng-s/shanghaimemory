@@ -4,6 +4,7 @@ import com.shanghai.memory.data.AppSettings
 import com.shanghai.memory.data.TopicRouting
 import com.shanghai.memory.data.model.SearchHit
 import com.shanghai.memory.data.model.SearchKind
+import com.shanghai.memory.data.text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -77,15 +78,15 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
             val arr = JSONObject(text).optJSONArray("results") ?: return emptyList()
             return (0 until arr.length()).mapNotNull { i ->
                 val o = arr.optJSONObject(i) ?: return@mapNotNull null
-                val url = o.optString("url")
-                val title = o.optString("title")
+                val url = o.text("url")
+                val title = o.text("title")
                 if (url.isBlank() || title.isBlank()) return@mapNotNull null
                 SearchHit(
                     title = title,
                     url = url,
-                    summary = o.optString("summary").ifBlank { o.optString("snippet") },
-                    siteName = o.optString("site_name").takeIf { it.isNotBlank() && it != "null" },
-                    publishDate = o.optString("date").takeIf { it.isNotBlank() && it != "null" }?.take(10),
+                    summary = o.text("summary").ifBlank { o.text("snippet") },
+                    siteName = o.text("site_name").takeIf { it.isNotBlank() },
+                    publishDate = o.text("date").takeIf { it.isNotBlank() }?.take(10),
                     score = o.optDouble("rerank_score", 0.0)
                 )
             }.sortedByDescending { it.score }
@@ -110,15 +111,15 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
             val arr = JSONObject(text).optJSONArray("search_result") ?: return emptyList()
             return (0 until arr.length()).mapNotNull { i ->
                 val o = arr.optJSONObject(i) ?: return@mapNotNull null
-                val link = o.optString("link")
-                val title = o.optString("title")
+                val link = o.text("link")
+                val title = o.text("title")
                 if (link.isBlank() || title.isBlank()) return@mapNotNull null
                 SearchHit(
                     title = title,
                     url = link,
-                    summary = o.optString("content"),
-                    siteName = o.optString("media").takeIf { it.isNotBlank() && it != "null" },
-                    publishDate = o.optString("publish_date").takeIf { it.isNotBlank() && it != "null" }?.take(10)
+                    summary = o.text("content"),
+                    siteName = o.text("media").takeIf { it.isNotBlank() },
+                    publishDate = o.text("publish_date").takeIf { it.isNotBlank() }?.take(10)
                 )
             }
         }
@@ -146,17 +147,17 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
                 ?: return emptyList()
             return (0 until arr.length()).mapNotNull { i ->
                 val o = arr.optJSONObject(i) ?: return@mapNotNull null
-                val url = o.optString("url").ifBlank { o.optString("link") }
-                val title = o.optString("title").ifBlank { o.optString("name") }
+                val url = o.text("url").ifBlank { o.text("link") }
+                val title = o.text("title").ifBlank { o.text("name") }
                 if (url.isBlank() || title.isBlank()) return@mapNotNull null
                 SearchHit(
                     title = title,
                     url = url,
-                    summary = o.optString("summary")
-                        .ifBlank { o.optString("content") }
-                        .ifBlank { o.optString("snippet") },
-                    siteName = o.optString("site_name").takeIf { it.isNotBlank() && it != "null" },
-                    publishDate = o.optString("date").takeIf { it.isNotBlank() && it != "null" }?.take(10)
+                    summary = o.text("summary")
+                        .ifBlank { o.text("content") }
+                        .ifBlank { o.text("snippet") },
+                    siteName = o.text("site_name").takeIf { it.isNotBlank() },
+                    publishDate = o.text("date").takeIf { it.isNotBlank() }?.take(10)
                 )
             }
         }

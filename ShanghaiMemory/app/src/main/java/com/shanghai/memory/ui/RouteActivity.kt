@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.shanghai.memory.R
 import com.shanghai.memory.data.AmapService
 import com.shanghai.memory.data.CuratedSpots
@@ -101,7 +100,14 @@ class RouteActivity : ThemedActivity() {
         if (animate && target != old) {
             views[old]?.let { ThemeFx.slideOutPage(it, forward = target > old) }
         }
-        views.forEach { (key, view) -> view.visibility = if (key == target) View.VISIBLE else View.GONE }
+        views.forEach { (key, view) ->
+            when {
+                key == target -> view.visibility = View.VISIBLE
+                // 正在退出的那一页交给动画收尾，这里设 GONE 会把退场动画掐断
+                animate && target != old && key == old -> Unit
+                else -> view.visibility = View.GONE
+            }
+        }
         page = target
         if (target != PAGE_CUSTOM) hideKeyboard()
         binding.txtRouteTitle.text = when (target) {
@@ -111,6 +117,11 @@ class RouteActivity : ThemedActivity() {
             else -> getString(R.string.route_pick_title)
         }
         if (animate) views[target]?.let { ThemeFx.slideInPage(it, forward = target > old) }
+    }
+
+    /** 系统返回键按层级退：子页回上一级，一级菜单才真的退出 */
+    override fun onBackPressed() {
+        if (page == PAGE_MENU) super.onBackPressed() else showPage(parentOf(page))
     }
 
     private fun hideKeyboard() {

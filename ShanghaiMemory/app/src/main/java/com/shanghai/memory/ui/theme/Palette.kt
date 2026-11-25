@@ -167,10 +167,11 @@ object ThemeState {
         }
     }
 
-    /** 兼容旧调用：只换色板，其它不变 */
+    /** 兼容旧调用：只换色板，其它不变（surfaceAlpha 必须原样带上，否则不透明度会被重置成 100） */
     fun update(id: PaletteId) {
         apply(palette = id, light = light, customAccent = null, font = font,
-            fontScale = fontScale, importedFontPath = importedFontPath, cornerDp = cornerDp)
+            fontScale = fontScale, importedFontPath = importedFontPath, cornerDp = cornerDp,
+            surfaceAlpha = surfaceAlpha)
     }
 
     /** 当前正文字体；取不到就返回 null 让调用方用系统默认 */

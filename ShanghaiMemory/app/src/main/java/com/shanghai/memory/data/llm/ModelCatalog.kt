@@ -5,7 +5,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -88,18 +90,17 @@ object ModelCatalog {
 
         val list = array?.mapNotNull { element ->
             val obj = element as? JsonObject ?: return@mapNotNull null
-            val id = obj["id"]?.jsonPrimitive?.content
-                ?: obj["model"]?.jsonPrimitive?.content
-                ?: return@mapNotNull null
-            val name = obj["name"]?.jsonPrimitive?.content?.takeIf { it.isNotBlank() } ?: id
-            val context = obj["context_window"]?.jsonPrimitive?.content?.toIntOrNull()
-            val effort = (obj["effort"] as? JsonObject)
-                ?.get("default_level")?.jsonPrimitive?.content
+            val id = obj.text("id") ?: obj.text("model") ?: return@mapNotNull null
+            val name = obj.text("name") ?: id
+            val context = obj.text("context_window")?.toIntOrNull()
+            val effort = (obj["effort"] as? JsonObject)?.text("default_level")
             val modalities = buildString {
                 val input = obj["input_modalities"] as? JsonArray
                 val output = obj["output_modalities"] as? JsonArray
                 if (input != null && output != null) {
-                    val visual = input.any { it.jsonPrimitive.content.contains("image", true) }
+                    val visual = input.any {
+                        (it as? JsonPrimitive)?.content?.contains("image", true) == true
+                    }
                     if (visual) append("支持图片输入")
                 }
             }
@@ -110,3 +111,10 @@ object ModelCatalog {
         list.sortedBy { it.id }
     }
 }
+
+/**
+ * JsonNull 也是 JsonPrimitive，直接取 content 会得到字符串 "null"：
+ * 于是模型列表里冒出名为「null」的条目。这里把 null 与空串一并当缺失。
+ */
+private fun JsonObject.text(key: String): String? =
+    (this[key] as? JsonPrimitive)?.takeIf { it !is JsonNull }?.content?.takeIf { it.isNotBlank() }
