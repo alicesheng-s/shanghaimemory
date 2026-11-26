@@ -32,6 +32,7 @@ import com.shanghai.memory.ui.theme.ThemeFx
 import com.shanghai.memory.ui.theme.ThemeState
 import com.shanghai.memory.ui.theme.ThemedActivity
 import com.shanghai.memory.ui.theme.colorOf
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.io.File
@@ -688,6 +689,8 @@ class SettingsActivity : ThemedActivity() {
                 val list = ModelCatalog.list(draft)
                 binding.txtStatus.text = if (en) "Found ${list.size} models—pick one." else "拉取到了 ${list.size} 个可用模型，选一个吧。"
                 showModels(list)
+            } catch (c: CancellationException) {
+                throw c
             } catch (t: Throwable) {
                 val msg = t.message ?: if (en) "unknown error" else "未知错误"
                 binding.txtStatus.text = if (en) "Fetch failed: $msg" else "没拉取成功：$msg"
@@ -824,6 +827,8 @@ class SettingsActivity : ThemedActivity() {
                         append("对方回复：").append(reply.toString().trim().take(40))
                     }
                 }
+            } catch (c: CancellationException) {
+                throw c
             } catch (t: Throwable) {
                 val msg = t.message ?: if (en) "unknown error" else "未知错误"
                 binding.txtStatus.text = if (en) "Connection failed: $msg" else "没能连上：$msg"

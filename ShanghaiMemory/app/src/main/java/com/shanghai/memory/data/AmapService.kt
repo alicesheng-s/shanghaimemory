@@ -9,6 +9,7 @@ import com.amap.api.services.poisearch.PoiResult
 import com.amap.api.services.poisearch.PoiSearch
 import com.shanghai.memory.data.model.PoiInfo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -100,31 +101,42 @@ class AmapService(context: Context) {
             district to formatted
         }
 
-    /** 正向地理编码：把路线站点名换成坐标，画线与向导都靠它 */
+    /** 正向地理编码：把路线站点名换成坐标，画线与向导都靠它；偶发限流自动退避重试一次 */
     suspend fun geocode(keyword: String): Pair<Double, Double>? =
         withContext(Dispatchers.Main) {
             val text = keyword.trim()
             if (text.isEmpty()) return@withContext null
-            val search = GeocodeSearch(ctx)
-            val result = withTimeoutOrNull(GEOCODE_TIMEOUT_MS) {
-                suspendCancellableCoroutine<com.amap.api.services.geocoder.GeocodeResult?> { cont ->
-                    search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
-                        override fun onRegeocodeSearched(r: RegeocodeResult?, code: Int) = Unit
-
-                        override fun onGeocodeSearched(
-                            r: com.amap.api.services.geocoder.GeocodeResult?,
-                            code: Int
-                        ) {
-                            if (cont.isActive) cont.resume(if (code == 1000) r else null)
-                        }
-                    })
-                    search.getFromLocationNameAsyn(
-                        com.amap.api.services.geocoder.GeocodeQuery(text, CITY_CODE)
-                    )
-                }
+            var (code, result) = geocodeOnce(text)
+            if (code != 1000 && shouldRetry(code)) {
+                delay(750)
+                val retry = geocodeOnce(text)
+                code = retry.first
+                result = retry.second
             }
+            if (code != 1000) return@withContext null
             result?.geocodeAddressList?.firstOrNull()?.latLonPoint?.let { it.latitude to it.longitude }
         }
+
+    private suspend fun geocodeOnce(text: String): Pair<Int, com.amap.api.services.geocoder.GeocodeResult?> {
+        val search = GeocodeSearch(ctx)
+        return withTimeoutOrNull(GEOCODE_TIMEOUT_MS) {
+            suspendCancellableCoroutine { cont ->
+                search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
+                    override fun onRegeocodeSearched(r: RegeocodeResult?, code: Int) = Unit
+
+                    override fun onGeocodeSearched(
+                        r: com.amap.api.services.geocoder.GeocodeResult?,
+                        code: Int
+                    ) {
+                        if (cont.isActive) cont.resume(code to (if (code == 1000) r else null))
+                    }
+                })
+                search.getFromLocationNameAsyn(
+                    com.amap.api.services.geocoder.GeocodeQuery(text, CITY_CODE)
+                )
+            }
+        } ?: (0 to null)
+    }
 
     /**
      * 按名字直接找地方。搜索「武康大楼」这类具体地名时周边检索帮不上忙，得走关键词检索。
@@ -134,26 +146,14 @@ class AmapService(context: Context) {
         withContext(Dispatchers.Main) {
             val text = keyword.trim()
             if (text.isEmpty()) return@withContext emptyList()
-            val query = PoiSearch.Query(text, "", CITY_CODE).apply {
-                pageSize = limit.coerceIn(1, 25)
-                pageNum = 1
+            var (code, result) = keywordOnce(text, limit)
+            if (code != 1000 && shouldRetry(code)) {
+                delay(750)
+                val retry = keywordOnce(text, limit)
+                code = retry.first
+                result = retry.second
             }
-            val search = PoiSearch(ctx, query)
-            val result = withTimeoutOrNull(KEYWORD_TIMEOUT_MS) {
-                suspendCancellableCoroutine<PoiResult?> { cont ->
-                    search.setOnPoiSearchListener(object : PoiSearch.OnPoiSearchListener {
-                        override fun onPoiSearched(r: PoiResult?, code: Int) {
-                            if (cont.isActive) cont.resume(if (code == 1000) r else null)
-                        }
-
-                        override fun onPoiItemSearched(
-                            item: com.amap.api.services.core.PoiItem?,
-                            code: Int
-                        ) = Unit
-                    })
-                    search.searchPOIAsyn()
-                }
-            }
+            if (code != 1000) return@withContext emptyList()
             result?.pois.orEmpty().mapNotNull { item ->
                 val point = item.latLonPoint ?: return@mapNotNull null
                 PoiInfo(
@@ -168,6 +168,32 @@ class AmapService(context: Context) {
                 )
             }.filter { it.name.isNotBlank() }
         }
+
+    private suspend fun keywordOnce(text: String, limit: Int): Pair<Int, PoiResult?> {
+        val query = PoiSearch.Query(text, "", CITY_CODE).apply {
+            pageSize = limit.coerceIn(1, 25)
+            pageNum = 1
+        }
+        val search = PoiSearch(ctx, query)
+        return withTimeoutOrNull(KEYWORD_TIMEOUT_MS) {
+            suspendCancellableCoroutine { cont ->
+                search.setOnPoiSearchListener(object : PoiSearch.OnPoiSearchListener {
+                    override fun onPoiSearched(r: PoiResult?, code: Int) {
+                        if (cont.isActive) cont.resume(code to (if (code == 1000) r else null))
+                    }
+
+                    override fun onPoiItemSearched(
+                        item: com.amap.api.services.core.PoiItem?,
+                        code: Int
+                    ) = Unit
+                })
+                search.searchPOIAsyn()
+            }
+        } ?: (0 to null)
+    }
+
+    /** 非断网（1804/1806）与非超时（0）场景（含高德 QPS 限流 1004/1009/1013）允许退避重试一次 */
+    private fun shouldRetry(code: Int): Boolean = code != 0 && code != 1804 && code != 1806
 
     /**
      * 行政区用 adName：cityName 是整个「上海市」，放进「区」字段等于没填。

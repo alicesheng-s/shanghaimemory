@@ -16,7 +16,7 @@
     <string name="map_initial_title">Pan the map to explore a spot</string>
     <string name="map_initial_meta">Shanghai · Locating you…</string>
     <string name="map_here_found">Right here: %1$s</string>
-    <string name="map_nearby_found">Nearby landmark: %1$s · ~%2$d m</string>
+    <string name="map_nearby_found">Nearby landmark: %1$s · %2$s</string>
     <string name="map_pick_first">Pan the map and pause the pin over a landmark first</string>
     <string name="map_no_landmark">No local story found right here</string>
     <string name="map_move_hint">Try moving the pin to a nearby factory, wharf, or historic lane</string>
@@ -99,15 +99,15 @@
     <string name="route_pick_title">Tour Routes</string>
     <string name="route_menu_hint">Pick a curated trail to customize, or enter keywords and let AI scout real places for you.</string>
     <string name="route_menu_preset">Curated Trails</string>
-    <string name="route_menu_preset_desc">Power Trail and Industry Trail—each with 8 verified heritage stops you can mix and match.</string>
+    <string name="route_menu_preset_desc">Power Trail and Industry Trail—each with 20 verified heritage stops you can mix and match.</string>
     <string name="route_menu_custom">Explore by Interest</string>
     <string name="route_menu_custom_desc">Enter keywords and preferences. AI finds real spots on the map, and you decide which ones to visit.</string>
     <string name="route_preset_hint">Pick a theme below to browse and select stops on the next page.</string>
     <string name="route_preset_title">Curated Trails</string>
     <string name="route_theme_power">Power Trail</string>
-    <string name="route_theme_power_desc">From Shanghai\'s first 1882 streetlamps on the Bund to the 1913 Yangshupu Power Plant.</string>
+    <string name="route_theme_power_desc">From 1882 Bund arc lamps and historic substations to major powerhouses and turbine works.</string>
     <string name="route_theme_industry">Industry Trail</string>
-    <string name="route_theme_industry_desc">Shipyards, cotton mills, silos, sugar refineries, and historic post offices along the riverbanks.</string>
+    <string name="route_theme_industry_desc">Shipyards, cotton mills, silos, mints, refineries, and steelworks along both rivers.</string>
     <string name="route_custom_title">Explore by Interest</string>
     <string name="route_custom_hint">Tell us what theme excites you and whether you prefer live exhibitions or historic architecture.</string>
     <string name="route_custom_keywords">Keywords</string>
@@ -248,7 +248,7 @@
     <string name="onb_p4_note">Seeing "No local story found right here" is intentional—it filters out convenience stores, apartments, and modern intersections.</string>
     <string name="onb_p5_title">Curating your walking route</string>
     <string name="onb_p5_1">Tap the pin icon on the right (or Tour Routes in the side menu) to start.</string>
-    <string name="onb_p5_2">Curated Trails: Power Trail and Industry Trail each offer 8 verified heritage stops to pick from.</string>
+    <string name="onb_p5_2">Curated Trails: Power Trail and Industry Trail each offer 20 theme-pure heritage stops to pick from.</string>
     <string name="onb_p5_3">Explore by Interest: enter keywords (with and / or / not) and preferences to discover places across the city.</string>
     <string name="onb_p5_4">Chat briefly about your pace and time, then follow the plotted route and live compass navigation stop by stop.</string>
     <string name="onb_p5_note">Your chosen stops are a hard rule—AI only orders them and suggests durations without adding or dropping stops.</string>

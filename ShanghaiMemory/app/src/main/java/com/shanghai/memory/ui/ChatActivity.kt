@@ -163,7 +163,9 @@ class ChatActivity : ThemedActivity() {
     private fun switchTo(picked: ChatChannel) {
         if (picked == channel) return
         channel = picked
-        spokenId = -1L
+        spokenId = ChatStore.messages(channel)
+            .lastOrNull { it.role == ChatMessage.Role.ASSISTANT && !it.streaming }
+            ?.id ?: -1L
         updateHeader()
         render(ChatStore.messages(channel))
         bootstrap()
@@ -230,12 +232,6 @@ class ChatActivity : ThemedActivity() {
 
     private fun bootstrap() {
         lifecycleScope.launch {
-            val settings = store.current()
-            ttsEnabled = settings.ttsEnabled
-            ttsSpeed = settings.ttsSpeed
-            if (ttsEnabled) ensureSpeaker()
-            updateDiag(settings)
-
             val key = anchorKey()
             val anchor = ChatStore.anchorOf(channel)
             val existing = ChatStore.messages(channel).isNotEmpty()
@@ -245,8 +241,19 @@ class ChatActivity : ThemedActivity() {
             if (existing && key.isNotBlank() && anchor != key) {
                 ChatStore.clear(channel)
                 spokenId = -1L
+            } else if (existing) {
+                // 回到已有对话（切 tab 或重新打开）时不自动重读已经讲完的旧消息
+                spokenId = ChatStore.messages(channel)
+                    .lastOrNull { it.role == ChatMessage.Role.ASSISTANT && !it.streaming }
+                    ?.id ?: -1L
             }
             ChatStore.setAnchor(channel, key)
+
+            val settings = store.current()
+            ttsEnabled = settings.ttsEnabled
+            ttsSpeed = settings.ttsSpeed
+            if (ttsEnabled) ensureSpeaker()
+            updateDiag(settings)
 
             if (ChatStore.messages(channel).isEmpty()) {
                 when (channel) {

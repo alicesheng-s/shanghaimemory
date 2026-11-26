@@ -16,7 +16,7 @@
     <string name="map_initial_title">挪动地图，停在想听故事的地方</string>
     <string name="map_initial_meta">上海 · 正在寻找你的位置…</string>
     <string name="map_here_found">就在脚下：%1$s</string>
-    <string name="map_nearby_found">附近的地标：%1$s · 约 %2$d 米</string>
+    <string name="map_nearby_found">附近的地标：%1$s · %2$s</string>
     <string name="map_pick_first">先挪动地图，把准星停在一栋想了解的建筑上吧</string>
     <string name="map_no_landmark">这儿暂时没找到老故事</string>
     <string name="map_move_hint">把准星往旁边老厂房、老码头或里弄挪一挪试试</string>
@@ -99,15 +99,15 @@
     <string name="route_pick_title">游览路线</string>
     <string name="route_menu_hint">选一种逛法：跟着我们精选好的主题线走，或者自己定个关键词让 AI 帮你搜罗。</string>
     <string name="route_menu_preset">精选主题路线</string>
-    <string name="route_menu_preset_desc">电力之旅、工业之旅两条经典线，各有 8 处有据可查的老地标，想看哪几站自己挑。</string>
+    <string name="route_menu_preset_desc">电力之旅、工业之旅两条主题线，各有 20 处有据可查的典型地标，想看哪几站自己挑。</string>
     <string name="route_menu_custom">按兴趣自己找</string>
     <string name="route_menu_custom_desc">输入你想逛的关键词和偏好，先让 AI 联网找出真地方，再由你拍板定路线。</string>
     <string name="route_preset_hint">先挑一条感兴趣的主题线，下一页就能勾选想去的点位。</string>
     <string name="route_preset_title">精选主题路线</string>
     <string name="route_theme_power">电力之旅</string>
-    <string name="route_theme_power_desc">从 1882 年外滩的第一盏电灯，走到 1913 年的远东第一火力发电厂。</string>
+    <string name="route_theme_power_desc">从 1882 年外滩的第一盏电灯、老变电站，走到远东第一火力发电厂与电力制造基地。</string>
     <string name="route_theme_industry">工业之旅</string>
-    <string name="route_theme_industry_desc">船坞、纱厂、筒仓、糖厂、宰牲场与老邮局，触摸黄浦江与苏州河的生产现场。</string>
+    <string name="route_theme_industry_desc">船厂、纱厂、筒仓、造币厂、糖厂与钢铁车间，触摸黄浦江与苏州河的百年制造现场。</string>
     <string name="route_custom_title">按兴趣找地点</string>
     <string name="route_custom_hint">告诉我想探索什么主题，以及你更想看当下正在办的展览，还是原汁原味的老建筑。</string>
     <string name="route_custom_keywords">想逛什么关键词</string>
@@ -248,7 +248,7 @@
     <string name="onb_p4_note">提示：如果看到「这儿暂时没找到老故事」，说明准星停在了便利店、普通小区或现代路口上，这是故意帮你滤掉噪音哦。</string>
     <string name="onb_p5_title">怎么排一条自己的游览线</string>
     <string name="onb_p5_1">点地图右侧的路线图标，或从侧栏进入「游览路线」。</string>
-    <string name="onb_p5_2">精选路线：电力之旅和工业之旅各备好了 8 处经典坐标，挑几个你想去的就行。</string>
+    <string name="onb_p5_2">精选路线：电力之旅和工业之旅各备好了 20 处纯正主题地标，自由勾选你想去的点位就行。</string>
     <string name="onb_p5_3">自定义找点：写下关键词（支持 and、or、not 组合）和偏好，让 AI 帮你搜罗全城好去处。</string>
     <string name="onb_p5_4">挑完地点进对话，聊聊你的体力和时间，生成后的路线会画在地图上，还能在侧栏打开实时导航跟着走。</string>
     <string name="onb_p5_note">你勾上的点位就是硬规矩——AI 只会帮你顺路排顺序、算停留时长，绝不擅自增减你想去的地方。</string>

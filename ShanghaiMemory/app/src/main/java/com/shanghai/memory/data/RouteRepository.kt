@@ -8,8 +8,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.util.concurrent.ConcurrentHashMap
 
 class RouteRepository(
     private val settingsStore: SettingsStore,
@@ -25,6 +31,11 @@ class RouteRepository(
          * 截出来的 JSON 缺右括号，解析必然失败——这是「路线格式无法解析」的主因。
          */
         const val MAX_TOKENS = 3000
+        val HOUSE_NO_REGEX = Regex("\\d+号")
+        private const val AMAP_PACE_MS = 380L
+        private val paceMutex = Mutex()
+        private var nextSlotMs = 0L
+        private val coordCache = ConcurrentHashMap<String, Pair<Double, Double>>()
     }
 
     fun presets(): List<RoutePlan> = CuratedRoutes.presets()
@@ -132,12 +143,7 @@ class RouteRepository(
                 val targetName = stop.searchKey.ifBlank {
                     CuratedSpots.searchKeyFor(stop.name) ?: stop.name
                 }
-                val keyword = listOf("上海", stop.area, targetName)
-                    .filter { it.isNotBlank() }
-                    .joinToString(" ")
-                val point = service.geocode(keyword)
-                    ?: service.searchByKeyword(targetName, limit = 1).firstOrNull()
-                        ?.let { it.lat to it.lng }
+                val point = resolvePoint(service, stop.area, targetName)
                 if (point == null) stop else stop.copy(lat = point.first, lng = point.second)
             }
         }.awaitAll()
@@ -239,24 +245,93 @@ class RouteRepository(
         fromLng: Double
     ): List<SpotCandidate> = coroutineScope {
         val service = amap ?: return@coroutineScope spots
+        // 控制高德并发与起呼间隔，避免突发超过个人 Key 3 QPS 上限；命中进程缓存则零耗时返回
+        val gate = Semaphore(3)
         spots.map { spot ->
             async {
                 if (spot.located) return@async spot
-                // 策展库给重名地点留了 searchKey（把区写进检索词的那种），优先用它：
-                // 直接拿名字去编码，常被小区、写字楼里的同名门店抢走
-                val keyword = listOf("上海", spot.area, spot.searchKey.ifBlank { spot.name })
-                    .filter { it.isNotBlank() }
-                    .joinToString(" ")
-                val point = service.geocode(keyword)
-                    ?: service.searchByKeyword(spot.name, limit = 1).firstOrNull()
-                        ?.let { it.lat to it.lng }
-                // 查过一轮仍没有坐标：记下这次尝试，界面才会显示「未能定位」而不是一直转圈
-                if (point == null) spot.copy(locateAttempted = true)
-                else spot.locatedAt(point.first, point.second)
+                gate.withPermit {
+                    val target = spot.searchKey.ifBlank { spot.name }
+                    val point = resolvePoint(service, spot.area, target)
+                    if (point == null) spot.copy(locateAttempted = true)
+                    else spot.locatedAt(point.first, point.second)
+                }
             }
         }.awaitAll().map { spot ->
             if (fromLat == 0.0 && fromLng == 0.0) spot else spot.withDistance(fromLat, fromLng)
         }
+    }
+
+    private suspend fun paceSlot() {
+        val waitMs = paceMutex.withLock {
+            val now = android.os.SystemClock.elapsedRealtime()
+            val slot = maxOf(now, nextSlotMs)
+            nextSlotMs = slot + AMAP_PACE_MS
+            slot - now
+        }
+        if (waitMs > 0) delay(waitMs)
+    }
+
+    /**
+     * 统一把地点名称或门牌解析成高德坐标：
+     * - 门牌地址（含「xx号」）走正向地理编码优先，防止 POI 模糊搜索匹配到无关同名门牌；
+     * - 景点/地标名称先走关键词 POI 检索，再用地理编码与中文街区地址兜底；
+     * - 剥离「·」分隔符与英文模式下的英文区域描述，避免干扰高德中文地理编码。
+     */
+    private suspend fun resolvePoint(
+        service: AmapService,
+        area: String,
+        target: String
+    ): Pair<Double, Double>? {
+        val cleanTarget = target.trim()
+        if (cleanTarget.isEmpty()) return null
+        val chineseArea = extractChineseArea(area)
+        val cacheKey = "$cleanTarget|$chineseArea"
+        coordCache[cacheKey]?.let { return it }
+
+        val hasHouseNo = HOUSE_NO_REGEX.containsMatchIn(cleanTarget)
+
+        val resolved: Pair<Double, Double>? = if (hasHouseNo) {
+            val cityPrefix = if (cleanTarget.startsWith("上海")) cleanTarget else "上海市$cleanTarget"
+            paceSlot()
+            service.geocode(cityPrefix)
+                ?: run {
+                    if (chineseArea.isNotEmpty()) {
+                        val combined = "上海 $chineseArea $cleanTarget"
+                        if (combined != cityPrefix) {
+                            paceSlot()
+                            service.geocode(combined)
+                        } else null
+                    } else null
+                }
+                ?: run {
+                    paceSlot()
+                    service.searchByKeyword(cleanTarget, limit = 1).firstOrNull()?.let { it.lat to it.lng }
+                }
+        } else {
+            paceSlot()
+            service.searchByKeyword(cleanTarget, limit = 1).firstOrNull()?.let { it.lat to it.lng }
+                ?: run {
+                    val geoTarget = if (cleanTarget.startsWith("上海")) cleanTarget else "上海 $cleanTarget"
+                    paceSlot()
+                    service.geocode(geoTarget)
+                }
+                ?: run {
+                    if (chineseArea.isNotEmpty() && HOUSE_NO_REGEX.containsMatchIn(chineseArea)) {
+                        paceSlot()
+                        service.geocode("上海 $chineseArea")
+                    } else null
+                }
+        }
+
+        if (resolved != null) coordCache[cacheKey] = resolved
+        return resolved
+    }
+
+    private fun extractChineseArea(area: String): String {
+        val cleaned = area.replace('·', ' ').replace('•', ' ').trim()
+        if (cleaned.none { it in '\u4e00'..'\u9fff' }) return ""
+        return cleaned.replace(Regex("\\s+"), " ")
     }
 
     private fun parse(raw: String): RoutePlan? {

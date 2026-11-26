@@ -11,6 +11,7 @@ import android.graphics.Path
 import android.graphics.RectF
 import android.location.Location
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -117,6 +118,7 @@ class MapActivity : ThemedActivity() {
     private var pendingEnableLiveNav = false
     private var currentAzimuth = 0f
     private var isProgrammaticCamera = false
+    private var navAnimUntilMs = 0L
     private var lastNavResolveLatLng: LatLng? = null
     private var navMarker: Marker? = null
     private var navAccuracyCircle: Circle? = null
@@ -315,6 +317,7 @@ class MapActivity : ThemedActivity() {
         val target = myLatLng ?: aMap.cameraPosition?.target ?: LatLng(DEFAULT_LAT, DEFAULT_LNG)
         val zoom = maxOf(aMap.cameraPosition?.zoom ?: DEFAULT_ZOOM, NAV_ZOOM)
         isProgrammaticCamera = true
+        navAnimUntilMs = SystemClock.elapsedRealtime() + 450L
         aMap.animateCamera(
             CameraUpdateFactory.newCameraPosition(
                 CameraPosition(target, zoom, NAV_TILT, currentAzimuth)
@@ -323,10 +326,12 @@ class MapActivity : ThemedActivity() {
             object : AMap.CancelableCallback {
                 override fun onFinish() {
                     isProgrammaticCamera = false
+                    navAnimUntilMs = 0L
                 }
 
                 override fun onCancel() {
                     isProgrammaticCamera = false
+                    navAnimUntilMs = 0L
                 }
             }
         )
@@ -353,6 +358,9 @@ class MapActivity : ThemedActivity() {
         binding.btnRecenter.visibility = if (navFollowing) View.GONE else View.VISIBLE
         updateNavPillText()
         updateNavDrawerUi()
+        if (follow && myLatLng != null) {
+            binding.mapView.post { resumeNavFollow() }
+        }
     }
 
     private fun stopLiveNavigation() {
@@ -403,6 +411,7 @@ class MapActivity : ThemedActivity() {
         val target = myLatLng ?: return
         val zoom = maxOf(aMap.cameraPosition?.zoom ?: DEFAULT_ZOOM, NAV_ZOOM)
         isProgrammaticCamera = true
+        navAnimUntilMs = SystemClock.elapsedRealtime() + 450L
         aMap.animateCamera(
             CameraUpdateFactory.newCameraPosition(
                 CameraPosition(target, zoom, NAV_TILT, currentAzimuth)
@@ -411,10 +420,12 @@ class MapActivity : ThemedActivity() {
             object : AMap.CancelableCallback {
                 override fun onFinish() {
                     isProgrammaticCamera = false
+                    navAnimUntilMs = 0L
                 }
 
                 override fun onCancel() {
                     isProgrammaticCamera = false
+                    navAnimUntilMs = 0L
                 }
             }
         )
@@ -425,11 +436,11 @@ class MapActivity : ThemedActivity() {
         if (!liveNavEnabled) return
         navMarker?.rotateAngle = (360f - azimuth) % 360f
         updateNavPillText()
-        if (navFollowing) {
+        if (navFollowing && SystemClock.elapsedRealtime() >= navAnimUntilMs) {
             val target = myLatLng ?: aMap.cameraPosition?.target ?: return
             val cur = aMap.cameraPosition
             val zoom = maxOf(cur?.zoom ?: NAV_ZOOM, 15.5f)
-            val tilt = cur?.tilt ?: NAV_TILT
+            val tilt = cur?.tilt?.takeIf { it >= 5f } ?: NAV_TILT
             isProgrammaticCamera = true
             aMap.moveCamera(
                 CameraUpdateFactory.newCameraPosition(
@@ -716,12 +727,24 @@ class MapActivity : ThemedActivity() {
 
     private fun focusOn(poi: PoiInfo) {
         if (liveNavEnabled && navFollowing) pauseNavFollow()
-        candidates = listOf(poi)
-        applyPoi(poi)
-        lastResolvedKey = "%.4f,%.4f".format(poi.lat, poi.lng)
+        val adjusted = if (poi.distanceMeters <= 0) {
+            val here = myLatLng
+            if (here != null) {
+                val res = FloatArray(1)
+                Location.distanceBetween(here.latitude, here.longitude, poi.lat, poi.lng, res)
+                poi.copy(distanceMeters = res[0].toInt())
+            } else {
+                poi.copy(distanceMeters = -1)
+            }
+        } else {
+            poi
+        }
+        candidates = listOf(adjusted)
+        applyPoi(adjusted)
+        lastResolvedKey = "%.4f,%.4f".format(adjusted.lat, adjusted.lng)
         isProgrammaticCamera = true
         aMap.animateCamera(
-            CameraUpdateFactory.newLatLngZoom(LatLng(poi.lat, poi.lng), SEARCH_ZOOM),
+            CameraUpdateFactory.newLatLngZoom(LatLng(adjusted.lat, adjusted.lng), SEARCH_ZOOM),
             400L,
             object : AMap.CancelableCallback {
                 override fun onFinish() {
@@ -739,10 +762,17 @@ class MapActivity : ThemedActivity() {
         currentPoi = poi
         binding.txtPoiName.text = poi.name
         binding.txtPoiMeta.text = buildMeta(poi)
-        binding.txtStatus.text = if (poi.distanceMeters <= NEAR_METERS) {
-            getString(R.string.map_here_found, poi.name)
-        } else {
-            getString(R.string.map_nearby_found, poi.name, poi.distanceMeters)
+        binding.txtStatus.text = when {
+            poi.distanceMeters < 0 -> poi.name
+            poi.distanceMeters <= NEAR_METERS -> getString(R.string.map_here_found, poi.name)
+            else -> {
+                val distText = if (ThemeState.isEnglish) {
+                    if (poi.distanceMeters < 950) "~${poi.distanceMeters} m" else "~%.1f km".format(poi.distanceMeters / 1000f)
+                } else {
+                    if (poi.distanceMeters < 950) "约 ${poi.distanceMeters} 米" else "约 %.1f 公里".format(poi.distanceMeters / 1000f)
+                }
+                getString(R.string.map_nearby_found, poi.name, distText)
+            }
         }
         renderCandidates()
     }
@@ -1056,16 +1086,18 @@ class MapActivity : ThemedActivity() {
                 if (liveNavEnabled) {
                     updateNavPuck()
                     if (navFollowing) {
-                        val cur = aMap.cameraPosition
-                        val zoom = maxOf(cur?.zoom ?: NAV_ZOOM, 15.5f)
-                        val tilt = cur?.tilt ?: NAV_TILT
-                        isProgrammaticCamera = true
-                        aMap.moveCamera(
-                            CameraUpdateFactory.newCameraPosition(
-                                CameraPosition(here, zoom, tilt, currentAzimuth)
+                        if (SystemClock.elapsedRealtime() >= navAnimUntilMs) {
+                            val cur = aMap.cameraPosition
+                            val zoom = maxOf(cur?.zoom ?: NAV_ZOOM, 15.5f)
+                            val tilt = cur?.tilt?.takeIf { it >= 5f } ?: NAV_TILT
+                            isProgrammaticCamera = true
+                            aMap.moveCamera(
+                                CameraUpdateFactory.newCameraPosition(
+                                    CameraPosition(here, zoom, tilt, currentAzimuth)
+                                )
                             )
-                        )
-                        binding.mapView.post { isProgrammaticCamera = false }
+                            binding.mapView.post { isProgrammaticCamera = false }
+                        }
 
                         val last = lastNavResolveLatLng
                         val movedEnough = if (last == null) {

@@ -20,6 +20,7 @@ import com.shanghai.memory.data.SpotCandidate
 import com.shanghai.memory.databinding.ActivityRouteBinding
 import com.shanghai.memory.ui.theme.ThemeFx
 import com.shanghai.memory.ui.theme.ThemedActivity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -42,6 +43,7 @@ class RouteActivity : ThemedActivity() {
     private val selected = LinkedHashSet<String>()
     private var spots: List<SpotCandidate> = emptyList()
     private var page = PAGE_MENU
+    private var themeKey: String? = null
     private var themeTitle = ""
     /** 选点页是从哪一层进来的，返回时回到原地 */
     private var spotsFrom = PAGE_PRESET
@@ -83,8 +85,52 @@ class RouteActivity : ThemedActivity() {
         binding.btnFindSpots.setOnClickListener { findCustomSpots() }
         binding.btnUseSpots.setOnClickListener { useSelected() }
 
+        if (savedInstanceState != null) {
+            restoreUiState(savedInstanceState)
+        } else {
+            updateUseButton()
+            showPage(PAGE_MENU, animate = false)
+        }
+    }
+
+    private fun restoreUiState(saved: Bundle) {
+        preference = saved.getString(KEY_PREF, PREF_BOTH).orEmpty().ifBlank { PREF_BOTH }
+        highlightPreference()
+        spotsFrom = saved.getInt(KEY_SPOTS_FROM, PAGE_PRESET)
+        themeKey = saved.getString(KEY_THEME_KEY)
+        themeTitle = saved.getString(KEY_THEME_TITLE).orEmpty()
+        selected.clear()
+        selected.addAll(saved.getStringArrayList(KEY_SELECTED).orEmpty())
+
+        val targetPage = saved.getInt(KEY_PAGE, PAGE_MENU)
+        if (targetPage == PAGE_SPOTS) {
+            val theme = CuratedSpots.byKey(themeKey)
+            if (spotsFrom == PAGE_PRESET && theme != null) {
+                themeTitle = theme.title
+                spots = theme.spots.map { SpotCandidate.of(it) }
+                showPage(PAGE_SPOTS, animate = false)
+                binding.txtSpotsHint.text = getString(R.string.route_spots_count, spots.size)
+                renderSpots()
+                ensureLocation { locate() }
+                return
+            }
+            // 自定义检索结果未持久化，重建后回到自定义输入页避免空列表
+            showPage(PAGE_CUSTOM, animate = false)
+            updateUseButton()
+            return
+        }
         updateUseButton()
-        showPage(PAGE_MENU, animate = false)
+        showPage(targetPage, animate = false)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(KEY_PAGE, page)
+        outState.putInt(KEY_SPOTS_FROM, spotsFrom)
+        outState.putString(KEY_THEME_KEY, themeKey)
+        outState.putString(KEY_THEME_TITLE, themeTitle)
+        outState.putString(KEY_PREF, preference)
+        outState.putStringArrayList(KEY_SELECTED, ArrayList(selected))
+        super.onSaveInstanceState(outState)
     }
 
     // ---- 页面切换 ----
@@ -138,6 +184,7 @@ class RouteActivity : ThemedActivity() {
     // ---- 预设主题 ----
 
     private fun openTheme(theme: com.shanghai.memory.data.SpotTheme) {
+        themeKey = theme.key
         themeTitle = theme.title
         spotsFrom = PAGE_PRESET
         selected.clear()
@@ -187,6 +234,7 @@ class RouteActivity : ThemedActivity() {
                     binding.txtCustomStatus.text = getString(R.string.route_custom_empty)
                     return@launch
                 }
+                themeKey = null
                 themeTitle = keywords.take(12)
                 spotsFrom = PAGE_CUSTOM
                 selected.clear()
@@ -196,6 +244,8 @@ class RouteActivity : ThemedActivity() {
                 binding.txtSpotsHint.text = getString(R.string.route_spots_count, spots.size)
                 renderSpots()
                 ensureLocation { locate() }
+            } catch (c: CancellationException) {
+                throw c
             } catch (e: Exception) {
                 binding.txtCustomStatus.text = e.message ?: getString(R.string.route_custom_empty)
             } finally {
@@ -319,5 +369,12 @@ class RouteActivity : ThemedActivity() {
         const val PREF_EVENT = "活动"
         const val PREF_HISTORY = "历史建筑"
         const val PREF_BOTH = "都行"
+
+        const val KEY_PAGE = "route_page"
+        const val KEY_SPOTS_FROM = "route_spots_from"
+        const val KEY_THEME_KEY = "route_theme_key"
+        const val KEY_THEME_TITLE = "route_theme_title"
+        const val KEY_PREF = "route_pref"
+        const val KEY_SELECTED = "route_selected"
     }
 }
