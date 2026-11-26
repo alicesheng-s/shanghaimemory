@@ -14,32 +14,40 @@ import com.shanghai.memory.R
  */
 enum class PaletteId(
     val key: String,
-    val label: String,
-    val blurb: String,
+    private val labelZh: String,
+    private val labelEn: String,
+    private val blurbZh: String,
+    private val blurbEn: String,
     val darkStyleRes: Int,
     val lightStyleRes: Int,
     val swatchColorRes: Int
 ) {
     INK_GOLD(
         key = "ink_gold",
-        label = "墨金",
-        blurb = "暖金压在墨黑上，最接近工业档案的纸面感",
+        labelZh = "墨金",
+        labelEn = "Ink Gold",
+        blurbZh = "暖金压在墨黑上，像翻开旧工业档案的纸页",
+        blurbEn = "Warm gold on deep ink, like opening an archival ledger",
         darkStyleRes = R.style.Theme_ShanghaiMemory,
         lightStyleRes = R.style.Theme_ShanghaiMemory_Light,
         swatchColorRes = R.color.amber
     ),
     SAKURA(
         key = "sakura",
-        label = "樱花粉",
-        blurb = "深樱墨底配樱粉高光，夜里读故事不刺眼",
+        labelZh = "樱花粉",
+        labelEn = "Sakura Rose",
+        blurbZh = "深樱底配柔粉高光，夜里慢慢读故事也不刺眼",
+        blurbEn = "Dusky plum paired with soft sakura rose, easy on night walks",
         darkStyleRes = R.style.Theme_ShanghaiMemory_Sakura,
         lightStyleRes = R.style.Theme_ShanghaiMemory_Sakura_Light,
         swatchColorRes = R.color.sakura_accent
     ),
     CELADON(
         key = "celadon",
-        label = "青瓷",
-        blurb = "青釉般的冷绿，配滨江和厂房的水汽",
+        labelZh = "青瓷",
+        labelEn = "Celadon",
+        blurbZh = "青釉般的温润冷绿，很衬江边和老厂房的水汽",
+        blurbEn = "Porcelain sage green that suits the riverfront mist and old mills",
         darkStyleRes = R.style.Theme_ShanghaiMemory_Celadon,
         lightStyleRes = R.style.Theme_ShanghaiMemory_Celadon_Light,
         swatchColorRes = R.color.celadon_accent
@@ -51,12 +59,17 @@ enum class PaletteId(
      */
     CUSTOM(
         key = "custom",
-        label = "自定义",
-        blurb = "自己挑一个主色，背景、卡片、文字按它的色相自动派生",
+        labelZh = "自定义",
+        labelEn = "Custom",
+        blurbZh = "选一个你偏爱的主色，背景、卡片和字色都会跟着协调配好",
+        blurbEn = "Pick one favorite accent color and the rest harmonizes automatically",
         darkStyleRes = R.style.Theme_ShanghaiMemory,
         lightStyleRes = R.style.Theme_ShanghaiMemory_Light,
         swatchColorRes = R.color.amber
     );
+
+    val label: String get() = if (ThemeState.isEnglish) labelEn else labelZh
+    val blurb: String get() = if (ThemeState.isEnglish) blurbEn else blurbZh
 
     companion object {
         fun of(key: String?): PaletteId = entries.firstOrNull { it.key == key } ?: INK_GOLD
@@ -66,15 +79,20 @@ enum class PaletteId(
 /** 正文字体。前四项走系统字体族，其余是随包带的字体或用户自己导进来的文件 */
 enum class FontId(
     val key: String,
-    val label: String,
-    val blurb: String,
+    private val labelZh: String,
+    private val labelEn: String,
+    private val blurbZh: String,
+    private val blurbEn: String,
     val resId: Int = 0
 ) {
-    SYSTEM_SANS("system_sans", "系统黑体", "手机默认的思源黑体，最稳"),
-    SYSTEM_SERIF("system_serif", "系统宋体", "老派衬线，读长故事最像书"),
-    SYSTEM_MONO("system_mono", "系统等宽", "字符等宽，适合看资料与代码"),
-    MAPLE_MONO("maple_mono", "JetBrains Maple Mono", "随包带的等宽字体，中文与代码兼顾", R.font.jetbrains_maple_mono),
-    IMPORTED("imported", "我自己导入的字体", "从手机文件里选一个 .ttf 或 .otf");
+    SYSTEM_SANS("system_sans", "系统黑体", "System Sans", "手机自带的无衬线字体，清晰耐看", "Clean default sans-serif for everyday reading"),
+    SYSTEM_SERIF("system_serif", "系统宋体", "System Serif", "带笔锋的衬线体，读长故事很有书卷气", "Classic serif that reads like a printed chronicle"),
+    SYSTEM_MONO("system_mono", "系统等宽", "System Mono", "字符等宽，看年代、门牌和资料很利落", "Crisp monospace great for dates and records"),
+    MAPLE_MONO("maple_mono", "JetBrains Maple Mono", "JetBrains Maple Mono", "内置等宽字体，中英文混排都很舒服", "Bundled monospace crafted for bilingual prose", R.font.jetbrains_maple_mono),
+    IMPORTED("imported", "我导入的字体", "Imported Font", "从手机里挑选喜欢的 .ttf 或 .otf 字体文件", "Use your own .ttf or .otf font file");
+
+    val label: String get() = if (ThemeState.isEnglish) labelEn else labelZh
+    val blurb: String get() = if (ThemeState.isEnglish) blurbEn else blurbZh
 
     companion object {
         fun of(key: String?): FontId = entries.firstOrNull { it.key == key } ?: SYSTEM_SANS
@@ -135,6 +153,13 @@ object ThemeState {
     var surfaceAlpha: Int = 100
         private set
 
+    /** 界面与讲述语言："zh" 或 "en" */
+    @Volatile
+    var language: String = "zh"
+        private set
+
+    val isEnglish: Boolean get() = language == "en"
+
     private var lastSignature: String = ""
 
     /**
@@ -149,10 +174,12 @@ object ThemeState {
         fontScale: Float,
         importedFontPath: String,
         cornerDp: Int,
-        surfaceAlpha: Int = 100
+        surfaceAlpha: Int = 100,
+        language: String = this.language
     ) {
+        val lang = if (language == "en") "en" else "zh"
         val signature =
-            "$palette|$light|$customAccent|$font|$fontScale|$importedFontPath|$cornerDp|$surfaceAlpha"
+            "$palette|$light|$customAccent|$font|$fontScale|$importedFontPath|$cornerDp|$surfaceAlpha|$lang"
         this.palette = palette
         this.light = light
         this.custom = customAccent?.let { PaletteColors.derive(it, !light) }
@@ -161,6 +188,7 @@ object ThemeState {
         this.importedFontPath = importedFontPath
         this.cornerDp = cornerDp.coerceIn(0, 28)
         this.surfaceAlpha = surfaceAlpha.coerceIn(40, 100)
+        this.language = lang
         if (signature != lastSignature) {
             lastSignature = signature
             revision++

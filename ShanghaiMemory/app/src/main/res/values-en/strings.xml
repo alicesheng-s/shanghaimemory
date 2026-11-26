@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Shanghai Memory</string>
+    <string name="common_back">Back</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_confirm">Confirm</string>
+
+    <!-- Map & Roaming -->
+    <string name="map_hint_idle">Pan the map and rest the pin on any place you\'re curious about</string>
+    <string name="map_searching">Checking what\'s here…</string>
+    <string name="map_learn_more">Hear Its Story</string>
+    <string name="map_no_poi">No place record found right here</string>
+    <string name="map_search_failed">Couldn\'t look up this spot—please check your network</string>
+    <string name="map_open_drawer">Open side menu</string>
+    <string name="map_cursor_desc">Current pin position</string>
+    <string name="map_initial_title">Pan the map to explore a spot</string>
+    <string name="map_initial_meta">Shanghai · Locating you…</string>
+    <string name="map_here_found">Right here: %1$s</string>
+    <string name="map_nearby_found">Nearby landmark: %1$s · ~%2$d m</string>
+    <string name="map_pick_first">Pan the map and pause the pin over a landmark first</string>
+    <string name="map_no_landmark">No local story found right here</string>
+    <string name="map_move_hint">Try moving the pin to a nearby factory, wharf, or historic lane</string>
+    <string name="map_nothing_here">Nothing historic right under the pin—try nudging it toward a nearby old mill, wharf, or lane.</string>
+    <string name="map_alt_hint">%1$d more places nearby — tap to switch</string>
+    <string name="map_alt_title">Nearby places around the pin</string>
+    <string name="map_default_type">Place</string>
+
+    <!-- Route Guide -->
+    <string name="map_route_end">End</string>
+    <string name="map_route_done_title">Route complete!</string>
+    <string name="map_route_done_desc">Hope you enjoyed the walk. End this route in the menu or plan a new one.</string>
+    <string name="map_route_stop_title">Stop %1$d · %2$s</string>
+    <string name="map_route_stop_progress">%1$d / %2$d</string>
+    <string name="map_route_need_gps">Turn on location to see live distance to your next stop</string>
+    <string name="map_route_no_coord">Exact pin unavailable for this stop—follow the district note in the plan</string>
+    <string name="map_route_dist_km">About %1$.1f km away</string>
+    <string name="map_route_dist_m">About %1$d m away</string>
+    <string name="map_route_arrived">You\'ve arrived at %1$s</string>
+
+    <!-- Drawer & Live Navigation -->
+    <string name="drawer_nav_title">Live Walk Navigation</string>
+    <string name="drawer_nav_on">On · Rotating with your heading</string>
+    <string name="drawer_nav_off">Off · Tap to start</string>
+    <string name="drawer_chat">Memory Chat</string>
+    <string name="drawer_route">Tour Routes</string>
+    <string name="drawer_settings">Settings</string>
+    <string name="drawer_clear_route">End Current Route</string>
+    <string name="drawer_footer">Chats and routes stay only for this session and clear on exit. Your API key stays strictly on your device.</string>
+    <string name="drawer_palette_status">%1$s · %2$s</string>
+    <string name="drawer_theme_light">Light</string>
+    <string name="drawer_theme_dark">Dark</string>
+
+    <string name="nav_recenter">Re-center on me</string>
+    <string name="nav_pill_active">Live Nav · Facing %1$s %2$d°</string>
+    <string name="nav_pill_paused">Follow paused · Tap right button to re-center</string>
+    <string name="nav_pill_no_compass">Live location on (no compass sensor on device)</string>
+    <string name="nav_started_toast">Live navigation on—map will rotate with your facing direction</string>
+    <string name="nav_stopped_toast">Live navigation off</string>
+    <string name="nav_need_location">Location permission is needed to show your live position and heading</string>
+
+    <string name="dir_n">N</string>
+    <string name="dir_ne">NE</string>
+    <string name="dir_e">E</string>
+    <string name="dir_se">SE</string>
+    <string name="dir_s">S</string>
+    <string name="dir_sw">SW</string>
+    <string name="dir_w">W</string>
+    <string name="dir_nw">NW</string>
+
+    <!-- Story & Chat -->
+    <string name="story_title">Place Memory</string>
+    <string name="story_generating">Looking up records and crafting the story…</string>
+    <string name="story_retry">Try Again</string>
+    <string name="story_offline">Read Curated Offline Story</string>
+
+    <string name="chat_title">Memory Chat</string>
+    <string name="chat_tab_story">Place Stories</string>
+    <string name="chat_tab_plan">Route Planner</string>
+    <string name="chat_hint_story">Curious about something else here? Ask a follow-up</string>
+    <string name="chat_hint_plan">Share your pace, time available, or what you\'d love to see</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_clear">Clear</string>
+    <string name="chat_speak">Read Aloud</string>
+    <string name="chat_guidance_on">Web search is on: checking public records before telling the story.</string>
+    <string name="chat_guidance_off">Web search is off: answering from model knowledge; recent updates may be limited.</string>
+    <string name="chat_guidance_nokey">No API key yet—showing our offline curated notes. Add a key in Settings for live web-backed storytelling.</string>
+    <string name="chat_diag_nokey">No API Key · Offline Curated Mode</string>
+    <string name="chat_diag_ready">Key Ready</string>
+    <string name="chat_stage_prepare">Gathering notes…</string>
+    <string name="chat_stage_retry">No response received, retrying…</string>
+
+    <!-- Tour Routes -->
+    <string name="route_title">Tour Routes</string>
+    <string name="route_keyword_hint">Keywords, e.g. steel mill, dock, cotton mill</string>
+    <string name="route_generate">Build Route</string>
+    <string name="route_preset_power">Power Trail</string>
+    <string name="route_preset_industry">Industry Trail</string>
+    <string name="route_back">Back</string>
+    <string name="route_pick_title">Tour Routes</string>
+    <string name="route_menu_hint">Pick a curated trail to customize, or enter keywords and let AI scout real places for you.</string>
+    <string name="route_menu_preset">Curated Trails</string>
+    <string name="route_menu_preset_desc">Power Trail and Industry Trail—each with 8 verified heritage stops you can mix and match.</string>
+    <string name="route_menu_custom">Explore by Interest</string>
+    <string name="route_menu_custom_desc">Enter keywords and preferences. AI finds real spots on the map, and you decide which ones to visit.</string>
+    <string name="route_preset_hint">Pick a theme below to browse and select stops on the next page.</string>
+    <string name="route_preset_title">Curated Trails</string>
+    <string name="route_theme_power">Power Trail</string>
+    <string name="route_theme_power_desc">From Shanghai\'s first 1882 streetlamps on the Bund to the 1913 Yangshupu Power Plant.</string>
+    <string name="route_theme_industry">Industry Trail</string>
+    <string name="route_theme_industry_desc">Shipyards, cotton mills, silos, sugar refineries, and historic post offices along the riverbanks.</string>
+    <string name="route_custom_title">Explore by Interest</string>
+    <string name="route_custom_hint">Tell us what theme excites you and whether you prefer live exhibitions or historic architecture.</string>
+    <string name="route_custom_keywords">Keywords</string>
+    <string name="route_custom_keywords_hint">e.g. cotton mill or textile and Suzhou Creek</string>
+    <string name="route_custom_logic_hint">Supports and, or, not with parentheses—or just type a plain phrase.</string>
+    <string name="route_custom_prefer">Preference</string>
+    <string name="route_pref_event">Live Events: spots currently hosting exhibitions, markets, or open tours</string>
+    <string name="route_pref_history">Historic Architecture: old buildings where original industrial structure remains visible</string>
+    <string name="route_pref_both">Balanced: a mix of heritage architecture and current happenings</string>
+    <string name="route_find_spots">Ask AI to Find Spots</string>
+    <string name="route_custom_need_keywords">Please enter a few keywords first.</string>
+    <string name="route_custom_searching">Searching online for real spots—usually takes about 10–15 seconds…</string>
+    <string name="route_custom_empty">Couldn\'t find matching spots. Try tweaking or broadening your keywords.</string>
+    <string name="route_spots_count">Found %1$d spots. Tap + to pick your stops, then build your route below.</string>
+    <string name="route_add">+</string>
+    <string name="route_use_spots_empty">Select at least one spot above</string>
+    <string name="route_use_spots">Plan Route with %1$d Stops</string>
+
+    <!-- Search -->
+    <string name="search_title">Find a Place</string>
+    <string name="search_hint">Enter a landmark or street, e.g. Wukang Mansion</string>
+    <string name="search_go">Search</string>
+    <string name="search_cancel">Cancel</string>
+    <string name="search_need_text">Please enter a place name first.</string>
+    <string name="search_running">Looking up "%1$s"…</string>
+    <string name="search_empty">Couldn\'t find "%1$s". Try another spelling or add the district.</string>
+    <string name="search_results">Found %1$d places—pick one</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_menu_hint">Everything is grouped by topic—tap any card to adjust.</string>
+    <string name="settings_menu_language">Language / 语言</string>
+    <string name="settings_menu_language_desc">Switch between English and Simplified Chinese for UI and AI stories</string>
+    <string name="settings_language_title">Language / 语言</string>
+    <string name="settings_language_zh">简体中文</string>
+    <string name="settings_language_en">English</string>
+
+    <string name="settings_menu_appearance">Appearance &amp; Reading</string>
+    <string name="settings_menu_appearance_desc">Color palette, light/dark mode, corners, transparency &amp; typography</string>
+    <string name="settings_menu_model">AI Model &amp; Key</string>
+    <string name="settings_menu_model_desc">Provider, API Key, model name &amp; connection speed test</string>
+    <string name="settings_menu_reading">Web Search &amp; Voice</string>
+    <string name="settings_menu_reading_desc">Fact-checking search toggle, read-aloud voice &amp; speech speed</string>
+    <string name="settings_menu_gate">Landmark Filter</string>
+    <string name="settings_menu_gate_desc">Control which places count as worth telling, plus custom keywords</string>
+    <string name="settings_menu_onboarding">Replay Quick Guide</string>
+    <string name="settings_menu_onboarding_desc">Revisit the 5-step walkthrough anytime</string>
+
+    <string name="settings_section_appearance">Color Palette</string>
+    <string name="settings_section_model">Model &amp; Credentials</string>
+    <string name="settings_section_reading">Web Search &amp; Voice</string>
+    <string name="settings_section_gate">Landmark Rules</string>
+
+    <string name="settings_provider">Provider</string>
+    <string name="settings_apikey">API Key</string>
+    <string name="settings_apikey_hint">Stored only on this device—never uploaded</string>
+    <string name="settings_model">Model</string>
+    <string name="settings_baseurl">Base URL</string>
+    <string name="settings_test">Test Connection</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_saved">Saved</string>
+    <string name="settings_fetch_models">Fetch</string>
+
+    <string name="settings_web_search">Search Web Before Telling</string>
+    <string name="settings_web_search_desc">When on, AI gathers public sources first so stories stay grounded in verified facts.</string>
+    <string name="settings_tts">Read Stories Aloud</string>
+    <string name="settings_tts_desc">Automatically speaks finished stories and replies using your device\'s TTS voice.</string>
+    <string name="settings_tts_test">Test Voice</string>
+    <string name="settings_tts_testing">Speaking…</string>
+    <string name="settings_tts_speed">Speech speed %1$.1f×</string>
+    <string name="settings_tts_engines">Installed TTS engines: %1$s</string>
+    <string name="settings_tts_none">No system TTS engine found on this device.</string>
+
+    <string name="settings_gate_public">Include hospitals, schools &amp; civic halls</string>
+    <string name="settings_gate_public_desc">Turn off to skip schools, hospitals, and government buildings when roaming.</string>
+    <string name="settings_gate_business">Include shops &amp; office buildings</string>
+    <string name="settings_gate_business_desc">Off by default. Turning this on lets modern shops and offices trigger stories, which may lean toward business records.</string>
+    <string name="settings_gate_strict">Historic landmarks only (Strict)</string>
+    <string name="settings_gate_strict_desc">Only allows places with heritage terms like former site, mill, dock, or customs house.</string>
+    <string name="settings_gate_exclusive">Strict mode and "Include shops" are mutually exclusive—enabling one turns off the other.</string>
+    <string name="settings_gate_keywords">Custom allow keywords</string>
+    <string name="settings_gate_keywords_hint">Comma-separated, e.g. warehouse, mill, dock</string>
+    <string name="settings_gate_keywords_desc">Any place whose name matches these words is always allowed, bypassing the switches above.</string>
+
+    <string name="settings_palette_desc">Tap to switch palettes—takes effect immediately.</string>
+    <string name="settings_light">Theme Mode</string>
+    <string name="settings_accent">Accent Color</string>
+    <string name="settings_accent_desc">Pick one accent hue and backgrounds, cards, and contrast are derived automatically.</string>
+    <string name="settings_corner">Corner Radius</string>
+    <string name="settings_font">Story Font</string>
+    <string name="settings_font_size">Font Size</string>
+    <string name="settings_preview_text">Preview: Stories along the Bund will appear in this typeface and scale. In the 1920s, wharves ran day and night while the Customs House clock chimed every quarter hour.</string>
+    <string name="corner_value">Corner %1$d dp</string>
+    <string name="font_scale_value">Scale %1$.2f×</string>
+    <string name="light_follow">Follow System</string>
+    <string name="light_on">Light</string>
+    <string name="light_off">Dark</string>
+    <string name="accent_preset">Reset to palette default</string>
+    <string name="accent_custom">Enter custom hex…</string>
+    <string name="accent_current">Current %1$s</string>
+    <string name="accent_locked">Follows preset palette</string>
+    <string name="accent_need_custom">Switch palette to "Custom" first to pick your own accent color.</string>
+    <string name="accent_pick">Tap to pick an accent color</string>
+    <string name="font_import">Import local font…</string>
+    <string name="font_import_fail">Could not read this font file—please choose a valid .ttf or .otf file.</string>
+    <string name="font_import_ok">Imported: %1$s</string>
+    <string name="font_pick_title">Choose Story Font</string>
+    <string name="font_imported_label">Imported Font</string>
+    <string name="settings_alpha">Card Opacity</string>
+    <string name="settings_alpha_desc">Lower opacity lets the map show gently beneath panels while keeping text crisp.</string>
+    <string name="alpha_value">Opacity %1$d%%</string>
+
+    <!-- Onboarding -->
+    <string name="onb_skip">Skip</string>
+    <string name="onb_next">Next</string>
+    <string name="onb_start">Start Exploring</string>
+    <string name="onb_p1_title">Not a checklist—an on-site storyteller</string>
+    <string name="onb_p1_1">Stand outside an old mill, waterworks, or warehouse: the app checks public archives first, then tells you this building\'s own story.</string>
+    <string name="onb_p1_2">Unsure where to walk? Pick a few spots you like and let it weave them into a realistic route with time at each stop.</string>
+    <string name="onb_p1_3">When records fall short, it honestly says "To be verified"—never making up dates or names.</string>
+    <string name="onb_p2_title">First, bring your own AI key</string>
+    <string name="onb_p2_lead">This app has no built-in quota or accounts. Your API key stays strictly on your phone and is never uploaded anywhere.</string>
+    <string name="onb_p2_hint">Paste your API Key here (often starts with sk-)</string>
+    <string name="onb_p2_help">No key yet? You can create one on DeepSeek\'s open platform, or skip for now to browse our offline curated stories.</string>
+    <string name="onb_p2_saved">Saved—ready to continue.</string>
+    <string name="onb_p3_title">Pick a palette that feels right</string>
+    <string name="onb_p3_lead">Your palette shapes every card and story page. You can fine-tune corners, opacity, and fonts later under Appearance.</string>
+    <string name="onb_p3_ink_gold">Ink Gold</string>
+    <string name="onb_p3_sakura">Sakura</string>
+    <string name="onb_p3_celadon">Celadon</string>
+    <string name="onb_p3_light">Brightness</string>
+    <string name="onb_p3_preview">Preview: Stories from the Bund will appear like this. In the 1920s, wharves along the river ran day and night.</string>
+    <string name="onb_p4_title">Exploring on the map</string>
+    <string name="onb_p4_1">The map opens near your current location. Drag the map so the center pin rests over any building.</string>
+    <string name="onb_p4_2">Pause for a moment and the bottom card identifies what\'s right beneath the pin.</string>
+    <string name="onb_p4_3">Multiple places at one address? Tap "More nearby" to switch candidates.</string>
+    <string name="onb_p4_4">Tap "Hear Its Story" for four clear sections: Origin, History, Recent News, and Events. Turn on "Live Walk Navigation" in the side menu so the map rotates as you turn!</string>
+    <string name="onb_p4_note">Seeing "No local story found right here" is intentional—it filters out convenience stores, apartments, and modern intersections.</string>
+    <string name="onb_p5_title">Curating your walking route</string>
+    <string name="onb_p5_1">Tap the pin icon on the right (or Tour Routes in the side menu) to start.</string>
+    <string name="onb_p5_2">Curated Trails: Power Trail and Industry Trail each offer 8 verified heritage stops to pick from.</string>
+    <string name="onb_p5_3">Explore by Interest: enter keywords (with and / or / not) and preferences to discover places across the city.</string>
+    <string name="onb_p5_4">Chat briefly about your pace and time, then follow the plotted route and live compass navigation stop by stop.</string>
+    <string name="onb_p5_note">Your chosen stops are a hard rule—AI only orders them and suggests durations without adding or dropping stops.</string>
+</resources>

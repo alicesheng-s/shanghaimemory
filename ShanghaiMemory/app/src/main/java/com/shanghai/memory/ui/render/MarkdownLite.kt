@@ -24,7 +24,7 @@ import com.shanghai.memory.ui.theme.PaletteColors
 object MarkdownLite {
 
     private val heading = Regex("^#{1,6}\\s*(.+)$")
-    private val bracketHeading = Regex("^【(.+)】$")
+    private val bracketHeading = Regex("^(?:【(.+)】|\\[([^\\[\\]]+)])$")
     private val link = Regex("\\[(.+?)]\\((.+?)\\)")
     private val tableDivider = Regex("^\\|?[\\s:|-]{3,}\\|?$")
     private val orderedItem = Regex("^(\\d{1,2})[.)、]\\s*(.+)$")
@@ -74,11 +74,9 @@ object MarkdownLite {
                 }
 
                 bracketHeading.matches(trimmed) -> {
-                    appendHeading(
-                        out,
-                        bracketHeading.find(trimmed)?.groupValues?.get(1).orEmpty(),
-                        colors
-                    )
+                    val match = bracketHeading.find(trimmed)
+                    val title = match?.groupValues?.get(1)?.ifEmpty { match.groupValues[2] }.orEmpty()
+                    appendHeading(out, title, colors)
                     pendingBlank = true
                 }
 

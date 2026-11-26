@@ -36,17 +36,17 @@ class SpotAdapter(
             val colors = ThemeState.colors
             val ctx = binding.root.context
 
+            val en = ThemeState.isEnglish
             binding.txtSpotName.text = spot.name
-            binding.txtSpotArea.text = spot.area.ifBlank { "上海" }
-            binding.txtSpotBlurb.text = spot.blurb.ifBlank { "暂无简介" }
+            binding.txtSpotArea.text = spot.area.ifBlank { if (en) "Shanghai" else "上海" }
+            binding.txtSpotBlurb.text = spot.blurb.ifBlank { if (en) "No intro yet" else "暂无简介" }
 
             val dist = spot.distanceText
             binding.txtSpotDist.text = when {
-                dist.isNotBlank() -> "距你 $dist"
-                spot.located -> "已定位"
-                // 查过一轮仍没有坐标，就别再挂着「正在定位」骗人
-                spot.locateAttempted -> "未能定位"
-                else -> "正在定位…"
+                dist.isNotBlank() -> if (en) "$dist away" else "距你约 $dist"
+                spot.located -> if (en) "Pinned" else "已定位"
+                spot.locateAttempted -> if (en) "Location unavailable" else "暂未定位到"
+                else -> if (en) "Locating…" else "正在查找位置…"
             }
             binding.txtSpotDist.setTextColor(colors.accentBright)
 

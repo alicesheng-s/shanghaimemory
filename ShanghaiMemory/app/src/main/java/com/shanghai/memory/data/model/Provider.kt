@@ -33,7 +33,8 @@ enum class ThinkingStyle {
  */
 data class ProviderProfile(
     val id: String,
-    val displayName: String,
+    private val displayNameZh: String,
+    private val displayNameEn: String,
     val chatBaseUrl: String,
     val defaultModel: String,
     val modelOptions: List<String>,
@@ -41,6 +42,8 @@ data class ProviderProfile(
     val thinkingStyle: ThinkingStyle,
     val isCustom: Boolean = false
 ) {
+    val displayName: String
+        get() = if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) displayNameEn else displayNameZh
     val chatEndpoint: String get() = "${chatBaseUrl.trimEnd('/')}/chat/completions"
     val hasWebSearch: Boolean get() = searchKind != SearchKind.NONE
 }
@@ -49,7 +52,8 @@ object Providers {
 
     val DEEPSEEK = ProviderProfile(
         id = "deepseek",
-        displayName = "DeepSeek 官方",
+        displayNameZh = "DeepSeek 官方",
+        displayNameEn = "DeepSeek Official",
         chatBaseUrl = "https://api.deepseek.com/v1",
         defaultModel = "deepseek-flash",
         modelOptions = listOf("deepseek-flash", "deepseek-v4-pro"),
@@ -59,7 +63,8 @@ object Providers {
 
     val ZHIPU = ProviderProfile(
         id = "zhipu",
-        displayName = "智谱 GLM",
+        displayNameZh = "智谱 GLM",
+        displayNameEn = "Zhipu GLM",
         chatBaseUrl = "https://open.bigmodel.cn/api/paas/v4",
         defaultModel = "glm-4-flash",
         modelOptions = listOf("glm-4-flash", "glm-5.3-flash", "glm-5.3"),
@@ -69,7 +74,8 @@ object Providers {
 
     val KIMI = ProviderProfile(
         id = "kimi",
-        displayName = "Kimi / Moonshot",
+        displayNameZh = "Kimi / Moonshot",
+        displayNameEn = "Kimi / Moonshot",
         chatBaseUrl = "https://api.moonshot.cn/v1",
         defaultModel = "moonshot-v1-32k",
         modelOptions = listOf("moonshot-v1-8k", "moonshot-v1-32k", "kimi-k2-turbo-preview"),
@@ -79,7 +85,8 @@ object Providers {
 
     val CUSTOM = ProviderProfile(
         id = "custom",
-        displayName = "自定义（OpenAI 兼容）",
+        displayNameZh = "自定义（OpenAI 兼容）",
+        displayNameEn = "Custom (OpenAI Compatible)",
         chatBaseUrl = "https://api.example.com/v1",
         defaultModel = "",
         modelOptions = emptyList(),

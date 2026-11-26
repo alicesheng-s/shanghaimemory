@@ -83,7 +83,13 @@ class ChatClient(private val http: OkHttpClient = Http.client) {
             history = history,
             onReasoning = onReasoning
         )
-        if (result == null) throw IOException("请求被服务端拒绝，请检查模型名与 Key 是否匹配")
+        if (result == null) {
+            val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+            throw IOException(
+                if (en) "Request rejected by server—please verify model name and API Key"
+                else "请求被服务端拒绝，请核对一下模型名和 API Key 是否匹配"
+            )
+        }
         emitAll(result)
     }.flowOn(Dispatchers.IO)
 
@@ -136,7 +142,8 @@ class ChatClient(private val http: OkHttpClient = Http.client) {
         val response = try {
             http.newCall(request).execute()
         } catch (e: IOException) {
-            throw IOException("网络连接失败：${e.message}", e)
+            val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+            throw IOException(if (en) "Network error: ${e.message}" else "网络连接出了点问题：${e.message}", e)
         }
 
         if (!response.isSuccessful) {
@@ -150,7 +157,8 @@ class ChatClient(private val http: OkHttpClient = Http.client) {
 
         val sink = response.body ?: run {
             response.close()
-            throw IOException("响应体为空")
+            val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+            throw IOException(if (en) "Empty response body" else "服务端返回了空响应")
         }
 
         return flow {

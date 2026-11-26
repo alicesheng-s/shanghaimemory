@@ -36,7 +36,12 @@ class StoryRepository(
 
         if (!settings.hasKey) {
             send(StoryEvent.Phase(StoryPhase.OFFLINE_CURATED))
-            send(StoryEvent.Curated(CuratedStories.forPoi(poi), "未配置 API Key，展示离线策展底稿"))
+            val reason = if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) {
+                "No API Key yet — showing offline curated notes"
+            } else {
+                "还没填 API Key，先为你展示离线策展故事"
+            }
+            send(StoryEvent.Curated(CuratedStories.forPoi(poi), reason))
             return@channelFlow
         }
 
@@ -71,13 +76,24 @@ class StoryRepository(
         } catch (c: CancellationException) {
             throw c
         } catch (t: Throwable) {
+            val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
             if (buffer.isEmpty()) {
                 send(StoryEvent.Phase(StoryPhase.OFFLINE_CURATED))
-                val why = t.message ?: "网络异常"
-                send(StoryEvent.Curated(CuratedStories.forPoi(poi), "生成失败：$why，已切换离线策展底稿"))
+                val why = t.message ?: if (en) "network issue" else "网络不太稳"
+                val reason = if (en) {
+                    "Generation failed ($why) — switched to offline curated notes"
+                } else {
+                    "刚才没连上（$why），先切换成离线策展故事"
+                }
+                send(StoryEvent.Curated(CuratedStories.forPoi(poi), reason))
             } else {
                 send(StoryEvent.Phase(StoryPhase.FAILED))
-                send(StoryEvent.Failed("连接中断，已保留前文。"))
+                send(
+                    StoryEvent.Failed(
+                        if (en) "Connection interrupted; kept what was generated so far."
+                        else "网络突然断开了，前面的内容已经为你留着。"
+                    )
+                )
             }
         }
     }

@@ -47,7 +47,8 @@ data class RouteStop(
     val reason: String,
     val storyHook: String,
     val lat: Double = 0.0,
-    val lng: Double = 0.0
+    val lng: Double = 0.0,
+    val searchKey: String = ""
 ) {
     /** 坐标是否已通过高德地理编码补齐，没补齐的站点只列文字不上图 */
     val located: Boolean get() = lat != 0.0 && lng != 0.0

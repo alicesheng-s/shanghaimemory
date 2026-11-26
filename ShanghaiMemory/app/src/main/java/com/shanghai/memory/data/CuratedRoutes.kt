@@ -2,6 +2,7 @@ package com.shanghai.memory.data
 
 import com.shanghai.memory.data.model.RoutePlan
 import com.shanghai.memory.data.model.RouteStop
+import com.shanghai.memory.ui.theme.ThemeState
 
 /**
  * MVP 预置路线。不依赖网络与 Key，保证演示现场一定能走通，
@@ -9,7 +10,7 @@ import com.shanghai.memory.data.model.RouteStop
  */
 object CuratedRoutes {
 
-    private val powerTrail = RoutePlan(
+    private val powerTrailZh = RoutePlan(
         routeName = "电力之旅：从第一盏灯到不夜城",
         theme = "电如何进入上海，谁在维持它",
         stops = listOf(
@@ -58,7 +59,7 @@ object CuratedRoutes {
         totalMin = 240
     )
 
-    private val industryTrail = RoutePlan(
+    private val industryTrailZh = RoutePlan(
         routeName = "工业之旅：黄浦江与苏州河的两岸车间",
         theme = "中国近代工业在上海的起点与转身",
         stops = listOf(
@@ -115,5 +116,124 @@ object CuratedRoutes {
         totalMin = 300
     )
 
-    fun presets(): List<RoutePlan> = listOf(powerTrail, industryTrail)
+    private val powerTrailEn = RoutePlan(
+        routeName = "Power Trail: From the First Lamp to the Sleepless City",
+        theme = "How electricity entered Shanghai and who kept the lights on",
+        stops = listOf(
+            RouteStop(
+                seq = 1,
+                name = "The Bund · Zhongshan East 1st Rd",
+                area = "Huangpu",
+                stayMin = 30,
+                reason = "One of China's earliest electrified streets—arc lamps lit up this riverfront in 1882.",
+                storyHook = "Picture the first arc poles standing here beneath tonight's floodlights.",
+                searchKey = "外滩"
+            ),
+            RouteStop(
+                seq = 2,
+                name = "Shanghai University of Electric Power (Pingliang Campus)",
+                area = "Yangpu",
+                stayMin = 20,
+                reason = "Rooted in the 1951 Electric Power School that trained frontline grid engineers.",
+                storyHook = "Between a classroom and a city that never goes dark stand decades of graduates.",
+                searchKey = "上海电力大学（平凉路校区）"
+            ),
+            RouteStop(
+                seq = 3,
+                name = "Yangshupu Waterworks",
+                area = "Yangpu",
+                stayMin = 30,
+                reason = "A 1883 castle-style waterworks still pumping clean water after 140+ years.",
+                storyHook = "Listen for water behind the brick wall—the city was piped for water even before wires.",
+                searchKey = "杨树浦水厂"
+            ),
+            RouteStop(
+                seq = 4,
+                name = "Green Hill · Yangpu Riverfront",
+                area = "Yangpu",
+                stayMin = 40,
+                reason = "Former tobacco machine workshop transformed into a terraced riverside walkway.",
+                storyHook = "From sorting tobacco crates to sunset strolls—one structural cut changed everything.",
+                searchKey = "绿之丘"
+            ),
+            RouteStop(
+                seq = 5,
+                name = "Power Station of Art (Former Nanshi Power Plant)",
+                area = "Huangpu",
+                stayMin = 60,
+                reason = "Tracing back to 1897; its 165m chimney thermometer now anchors a contemporary art museum.",
+                storyHook = "A silent power plant that still measures the city's temperature every night.",
+                searchKey = "上海当代艺术博物馆"
+            )
+        ),
+        transitionLogic = "Walk from the Bund to East Nanjing Rd Station (Line 12 to Ningguo Rd), trace Pingliang & Yangshupu Roads, then head south to PSA.",
+        totalMin = 240
+    )
+
+    private val industryTrailEn = RoutePlan(
+        routeName = "Industry Trail: Workshops Along Two Rivers",
+        theme = "The birth and reinvention of modern industry in Shanghai",
+        stops = listOf(
+            RouteStop(
+                seq = 1,
+                name = "Former Jiangnan Shipyard Site",
+                area = "Huangpu",
+                stayMin = 40,
+                reason = "Founded in 1865 as Jiangnan Arsenal; built China's first steam warship in 1868.",
+                storyHook = "Stand at the empty dry dock and feel the sheer scale of heavy industry.",
+                searchKey = "江南造船厂旧址"
+            ),
+            RouteStop(
+                seq = 2,
+                name = "Power Station of Art (Former Nanshi Power Plant)",
+                area = "Huangpu",
+                stayMin = 60,
+                reason = "Historic power plant whose chimney and coal trestle became an art museum in 2012.",
+                storyHook = "Leaving the cranes and pipes intact turned the machine's skeleton into the gallery.",
+                searchKey = "上海当代艺术博物馆"
+            ),
+            RouteStop(
+                seq = 3,
+                name = "Sihang Warehouse Memorial",
+                area = "Jing'an",
+                stayMin = 40,
+                reason = "Defended for four days in October 1937; the west wall preserves its original shell scars.",
+                storyHook = "A commercial warehouse that became a fortress overnight.",
+                searchKey = "四行仓库"
+            ),
+            RouteStop(
+                seq = 4,
+                name = "1933 Old Millfun",
+                area = "Hongkou",
+                stayMin = 50,
+                reason = "A 1933 municipal abattoir whose spiral ramps and umbrella pillars follow workflow logic.",
+                storyHook = "Separate ramps for cattle and pigs—every strange angle had a practical job.",
+                searchKey = "1933 老场坊"
+            ),
+            RouteStop(
+                seq = 5,
+                name = "Yangshupu Waterworks",
+                area = "Yangpu",
+                stayMin = 30,
+                reason = "Built in 1883 in Gothic castle brickwork and still actively supplying the city.",
+                storyHook = "Building a pump house like a fortress was how Victorians spelled civic pride.",
+                searchKey = "杨树浦水厂"
+            ),
+            RouteStop(
+                seq = 6,
+                name = "Tilanqiao · Shanghai Jewish Refugees Museum",
+                area = "Hongkou",
+                stayMin = 45,
+                reason = "Centered on 1927 Ohel Moshe Synagogue, where over 20,000 refugees shared lanes with locals.",
+                storyHook = "Clotheslines and corner markets on Zhoushan Rd keep that shared memory alive.",
+                searchKey = "上海犹太难民纪念馆"
+            )
+        ),
+        transitionLogic = "Walk the first two stops along the Expo riverfront, head north to Sihang Warehouse, take Line 10 to 1933 Old Millfun, then follow the river east to Yangshupu and Tilanqiao.",
+        totalMin = 300
+    )
+
+    fun presets(): List<RoutePlan> =
+        if (ThemeState.isEnglish) listOf(powerTrailEn, industryTrailEn)
+        else listOf(powerTrailZh, industryTrailZh)
 }

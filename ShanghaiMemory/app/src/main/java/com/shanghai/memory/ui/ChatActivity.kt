@@ -272,15 +272,21 @@ class ChatActivity : ThemedActivity() {
 
     /** 顶部一行的自检信息：用的哪个服务商、哪个模型、有没有 Key、联网开没开 */
     private fun updateDiag(settings: AppSettings) {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         val keyState = if (settings.hasKey) {
             getString(R.string.chat_diag_ready)
         } else {
             getString(R.string.chat_diag_nokey)
         }
-        val search = if (settings.canSearch) "联网检索开启" else "联网检索关闭"
+        val search = when {
+            en && settings.canSearch -> "Web search on"
+            en -> "Web search off"
+            settings.canSearch -> "联网查证开启"
+            else -> "联网查证关闭"
+        }
         binding.txtDiag.text = listOf(
             settings.provider.displayName,
-            settings.model.ifBlank { "未选模型" },
+            settings.model.ifBlank { if (en) "No model" else "未选模型" },
             keyState,
             search
         ).joinToString(" · ")
@@ -322,26 +328,34 @@ class ChatActivity : ThemedActivity() {
     }
 
     private fun startStory() {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         val place = poi
         if (place == null) {
             ChatStore.add(
                 channel,
-                ChatMessage(0, ChatMessage.Role.SYSTEM, "还没有选中的地点。回地图把游标停在一个地方，再点「了解更多」。")
+                ChatMessage(
+                    0,
+                    ChatMessage.Role.SYSTEM,
+                    if (en) "No landmark selected yet. Head back to the map, rest the pin over a place, and tap \"Hear Its Story\"."
+                    else "还没选好地点呢。回地图把准星停在一处老地方，再点「听听它的故事」吧。"
+                )
             )
             return
         }
-        // 协程跑起来之后用户可能切到另一条会话。这里先把归属固定下来，
-        // 否则正文会写进新会话，而原会话的 streaming 标记永远停在 true
         val owner = channel
         ChatWorker.scope.launch {
             val settings = store.current()
             ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.SYSTEM, guidance(settings)))
-            ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, "讲讲这里：${place.name}"))
+            ChatStore.add(
+                owner,
+                ChatMessage(0, ChatMessage.Role.USER, if (en) "Tell me about ${place.name}" else "讲讲这里：${place.name}")
+            )
+            val initStage = if (en) "Checking public sources…" else "正在翻找公开资料…"
             val id = ChatStore.add(
                 owner,
-                ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在检索公开资料…")
+                ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = initStage)
             )
-            beginStage(id, "正在检索公开资料…")
+            beginStage(id, initStage)
             var firstChunk = true
             try {
                 StoryRepository(store).story(place).collect { event ->
@@ -357,15 +371,13 @@ class ChatActivity : ThemedActivity() {
                         }
 
                         is StoryEvent.Reasoning -> {
-                            // 模型自己吐出的思考片段，取末尾一小段当进度提示
                             val tailText = event.text.trim().replace('\n', ' ').takeLast(36)
                             if (tailText.isNotBlank()) {
-                                updateStageBase(id, "思考中：$tailText")
+                                updateStageBase(id, if (en) "Thinking: $tailText" else "整理思路中：$tailText")
                             }
                         }
 
                         is StoryEvent.Delta -> {
-                            // 正文开始出现，进度就不再占地方
                             if (firstChunk) {
                                 firstChunk = false
                                 endStage(id)
@@ -412,7 +424,9 @@ class ChatActivity : ThemedActivity() {
                 endStage(id)
                 ChatStore.update(owner, id) {
                     it.copy(
-                        text = it.text.ifBlank { "讲述失败：${t.message}" },
+                        text = it.text.ifBlank {
+                            if (en) "Story failed: ${t.message}" else "没能讲成：${t.message}"
+                        },
                         streaming = false,
                         stage = "",
                         isError = true
@@ -423,10 +437,9 @@ class ChatActivity : ThemedActivity() {
     }
 
     private fun openPlan(settings: AppSettings) {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.SYSTEM, guidance(settings)))
-        // 从侧栏直接进来时没有主题，用中性的名字，别把第一条预设路线的名字借过来
-        val name = planName.ifBlank { "上海城市漫游" }
-        // 不再兜底填预设站点：否则用户自己敲关键词进来，也会看到一条并不存在的预设路线
+        val name = planName.ifBlank { if (en) "Shanghai City Walk" else "上海城市漫游" }
         ChatStore.add(
             channel,
             ChatMessage(0, ChatMessage.Role.ASSISTANT, PromptTemplates.planOpener(name, planStops))
@@ -436,16 +449,19 @@ class ChatActivity : ThemedActivity() {
     private fun guidance(settings: AppSettings): String = when {
         settings.canSearch -> getString(R.string.chat_guidance_on)
         settings.hasKey -> getString(R.string.chat_guidance_off)
-        else -> "还没配置 API Key：现在只能读离线策展底稿。到设置里填一个 Key，我会先联网查资料、再讲述。"
+        else -> getString(R.string.chat_guidance_nokey)
     }
 
-    private fun stageOf(phase: StoryPhase): String = when (phase) {
-        StoryPhase.IDLE -> ""
-        StoryPhase.SEARCHING -> "正在检索公开资料…"
-        StoryPhase.GENERATING -> "正在讲述…"
-        StoryPhase.DONE -> ""
-        StoryPhase.FAILED -> "生成中断"
-        StoryPhase.OFFLINE_CURATED -> "改用离线策展底稿…"
+    private fun stageOf(phase: StoryPhase): String {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        return when (phase) {
+            StoryPhase.IDLE -> ""
+            StoryPhase.SEARCHING -> if (en) "Searching public records…" else "正在翻找公开资料…"
+            StoryPhase.GENERATING -> if (en) "Writing the story…" else "正在为你讲述…"
+            StoryPhase.DONE -> ""
+            StoryPhase.FAILED -> if (en) "Interrupted" else "生成中断了"
+            StoryPhase.OFFLINE_CURATED -> if (en) "Using offline curated notes…" else "改用离线策展故事…"
+        }
     }
 
     // ---- 用户输入 ----
@@ -461,28 +477,37 @@ class ChatActivity : ThemedActivity() {
     }
 
     private fun followUp(question: String) {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         val place = poi
         if (place == null) {
-            ChatStore.add(channel, ChatMessage(0, ChatMessage.Role.SYSTEM, "还没有选中的地点，先回地图选一个。"))
+            ChatStore.add(
+                channel,
+                ChatMessage(
+                    0,
+                    ChatMessage.Role.SYSTEM,
+                    if (en) "No landmark selected yet—pick a place on the map first."
+                    else "还没选中地点呢，先回地图挑一处老地方吧。"
+                )
+            )
             return
         }
-        // 同上：协程里的写入必须落在发起时的那条会话上
         val owner = channel
         val history = historyTurns()
         val draft = draftText()
         ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, question))
+        val stageText = if (en) "Thinking up a reply…" else "正在组织回答…"
         val id = ChatStore.add(
             owner,
-            ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在回答…")
+            ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = stageText)
         )
-        beginStage(id, "正在回答…")
+        beginStage(id, stageText)
         ChatWorker.scope.launch {
             val settings = store.current()
             if (!settings.hasKey) {
                 endStage(id)
                 ChatStore.update(owner, id) {
                     it.copy(
-                        text = "还没配置 API Key，回答不了。到设置里填一个再回来。",
+                        text = if (en) "No API Key yet—add one in Settings to chat freely." else "还没填 API Key，暂时没法继续追问。去设置里填一个再来聊吧。",
                         streaming = false,
                         stage = "",
                         isError = true
@@ -499,7 +524,9 @@ class ChatActivity : ThemedActivity() {
                     history = history,
                     onReasoning = { piece ->
                         val tailText = piece.trim().replace('\n', ' ').takeLast(36)
-                        if (tailText.isNotBlank()) updateStageBase(id, "思考中：$tailText")
+                        if (tailText.isNotBlank()) {
+                            updateStageBase(id, if (en) "Thinking: $tailText" else "整理思路中：$tailText")
+                        }
                     }
                 ).collect { chunk ->
                     if (firstChunk) {
@@ -516,7 +543,7 @@ class ChatActivity : ThemedActivity() {
                 endStage(id)
                 ChatStore.update(owner, id) {
                     it.copy(
-                        text = it.text.ifBlank { "请求失败：${t.message}" },
+                        text = it.text.ifBlank { if (en) "Request failed: ${t.message}" else "刚才请求失败了：${t.message}" },
                         streaming = false,
                         stage = "",
                         isError = true
@@ -527,14 +554,16 @@ class ChatActivity : ThemedActivity() {
     }
 
     private fun replan(notes: String) {
-        val name = planName.ifBlank { "上海城市漫游" }
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        val name = planName.ifBlank { if (en) "Shanghai City Walk" else "上海城市漫游" }
         val owner = channel
         ChatStore.add(owner, ChatMessage(0, ChatMessage.Role.USER, notes))
+        val stageText = if (en) "Arranging stops & pacing…" else "正在为你排路线和停留时间…"
         val id = ChatStore.add(
             owner,
-            ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = "正在重排站点与停留时间…")
+            ChatMessage(0, ChatMessage.Role.ASSISTANT, streaming = true, stage = stageText)
         )
-        beginStage(id, "正在重排站点与停留时间…")
+        beginStage(id, stageText)
         ChatWorker.scope.launch {
             try {
                 val repo = RouteRepository(store, amap = amap)
@@ -551,7 +580,9 @@ class ChatActivity : ThemedActivity() {
                 endStage(id)
                 ChatStore.update(owner, id) {
                     it.copy(
-                        text = it.text.ifBlank { "这套方案没排出来：${t.message}" },
+                        text = it.text.ifBlank {
+                            if (en) "Couldn't build this route: ${t.message}" else "这条路线没排出来：${t.message}"
+                        },
                         streaming = false,
                         stage = "",
                         isError = true
@@ -561,24 +592,43 @@ class ChatActivity : ThemedActivity() {
         }
     }
 
-    private fun renderPlan(plan: RoutePlan): String = buildString {
-        appendLine("**${plan.routeName}**")
-        appendLine("主题：${plan.theme}　全程约 ${plan.totalMin} 分钟")
-        plan.stops.forEach { stop ->
+    private fun renderPlan(plan: RoutePlan): String {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        return buildString {
+            appendLine("**${plan.routeName}**")
+            if (en) {
+                appendLine("Theme: ${plan.theme} · ~${plan.totalMin} min total")
+            } else {
+                appendLine("主题：${plan.theme}　全程约 ${plan.totalMin} 分钟")
+            }
+            plan.stops.forEach { stop ->
+                appendLine()
+                if (en) {
+                    appendLine("**Stop ${stop.seq} · ${stop.name}**")
+                    append("Stay ~${stop.stayMin} min")
+                } else {
+                    appendLine("**第 ${stop.seq} 站　${stop.name}**")
+                    append("建议逛 ${stop.stayMin} 分钟")
+                }
+                if (stop.area.isNotBlank()) append(" · ${stop.area}")
+                appendLine()
+                if (stop.reason.isNotBlank()) {
+                    appendLine(if (en) "Why go: ${stop.reason}" else "为什么去：${stop.reason}")
+                }
+                if (stop.storyHook.isNotBlank()) {
+                    appendLine(if (en) "Story hook: ${stop.storyHook}" else "现场切口：${stop.storyHook}")
+                }
+            }
+            if (plan.transitionLogic.isNotBlank()) {
+                appendLine()
+                appendLine(if (en) "Getting around: ${plan.transitionLogic}" else "怎么顺路走：${plan.transitionLogic}")
+            }
             appendLine()
-            appendLine("**第 ${stop.seq} 站　${stop.name}**")
-            append("停留 ${stop.stayMin} 分钟")
-            if (stop.area.isNotBlank()) append(" · ${stop.area}")
-            appendLine()
-            if (stop.reason.isNotBlank()) appendLine("为什么来：${stop.reason}")
-            if (stop.storyHook.isNotBlank()) appendLine("现场切口：${stop.storyHook}")
+            append(
+                if (en) "Your route is plotted on the map—head back and turn on Live Navigation in the side menu to follow along."
+                else "路线已经画到地图上啦，回地图可以在侧栏打开「实时位置导航」，跟着指引一站一站逛。"
+            )
         }
-        if (plan.transitionLogic.isNotBlank()) {
-            appendLine()
-            appendLine("怎么走：${plan.transitionLogic}")
-        }
-        appendLine()
-        append("路线已经画到地图上了，回地图跟着定位提示一站一站走。")
     }
 
     private fun historyTurns(): List<Turn> =
@@ -599,15 +649,19 @@ class ChatActivity : ThemedActivity() {
             .orEmpty()
 
     private fun confirmClear() {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         MaterialAlertDialogBuilder(this)
-            .setMessage("清空「${channel.title}」这条会话？")
-            .setPositiveButton("清空") { _, _ ->
+            .setMessage(
+                if (en) "Clear \"${channel.title}\" chat history?"
+                else "要清空「${channel.title}」的聊天记录吗？"
+            )
+            .setPositiveButton(R.string.chat_clear) { _, _ ->
                 ChatStore.clear(channel)
                 spokenId = -1L
                 render(emptyList())
                 bootstrap()
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 

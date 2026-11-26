@@ -35,10 +35,11 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.Holder>(DIFF) {
             // 用最终色板而不是 ?attr：用户自定义主色时，控件自带的静态色不是最终色
             val colors = ThemeState.colors
 
+            val en = ThemeState.isEnglish
             binding.txtRole.text = when (message.role) {
-                ChatMessage.Role.USER -> "我"
-                ChatMessage.Role.SYSTEM -> "系统"
-                ChatMessage.Role.ASSISTANT -> "讲述者"
+                ChatMessage.Role.USER -> if (en) "Me" else "我"
+                ChatMessage.Role.SYSTEM -> if (en) "Note" else "提示"
+                ChatMessage.Role.ASSISTANT -> if (en) "Storyteller" else "讲述者"
             } + if (message.stage.isNotBlank()) " · ${message.stage}" else ""
             binding.markBar.visibility =
                 if (message.role == ChatMessage.Role.ASSISTANT) View.VISIBLE else View.GONE
@@ -81,14 +82,18 @@ class ChatAdapter : ListAdapter<ChatMessage, ChatAdapter.Holder>(DIFF) {
                 binding.txtSources.visibility = View.VISIBLE
                 binding.txtSources.setTextColor(colors.textMuted)
                 binding.txtSources.text = buildString {
-                    append("资料：")
+                    append(if (en) "Sources: " else "参考资料：")
                     append(
-                        sources.take(5).joinToString("；") { hit ->
+                        sources.take(5).joinToString(if (en) "; " else "；") { hit ->
                             val site = hit.siteName?.takeIf { it.isNotBlank() }
-                            if (site != null) "${hit.title}（$site）" else hit.title
+                            if (site != null) {
+                                if (en) "${hit.title} ($site)" else "${hit.title}（$site）"
+                            } else {
+                                hit.title
+                            }
                         }
                     )
-                    if (message.streaming) append("  · 正在写…")
+                    if (message.streaming) append(if (en) " · writing…" else " · 正在写…")
                 }
             }
         }

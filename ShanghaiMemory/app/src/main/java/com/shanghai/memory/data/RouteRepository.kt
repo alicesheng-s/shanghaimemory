@@ -36,7 +36,10 @@ class RouteRepository(
         fixedStops: List<String> = emptyList()
     ): RoutePlan = withContext(Dispatchers.IO) {
         val settings = settingsStore.current()
-        if (!settings.hasKey) throw IllegalStateException("请先在设置里填写 API Key")
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        if (!settings.hasKey) {
+            throw IllegalStateException(if (en) "Please add an API Key in Settings first" else "请先到设置里填好 API Key 哦")
+        }
 
         // 路线要「最近能去哪」：先按话题找到近期活动的公开资料，再让模型在真实活动上排站点
         val activities = activityBlock(settings, keywords, notes)
@@ -51,7 +54,11 @@ class RouteRepository(
         val retry = ask(
             settings = settings,
             system = system,
-            userPrompt = prompt + "\n\n再次强调：只输出上面那一个 JSON 对象，第一个字符是 {，最后一个字符是 }。",
+            userPrompt = prompt + if (en) {
+                "\n\nReminder: output ONLY that single JSON object, starting with { and ending with }."
+            } else {
+                "\n\n再次强调：只输出上面那一个 JSON 对象，第一个字符是 {，最后一个字符是 }。"
+            },
             jsonMode = false
         )
         retry?.let { parse(it) }?.let { return@withContext it }
@@ -59,9 +66,11 @@ class RouteRepository(
         val raw = (retry ?: first).orEmpty()
         throw IllegalStateException(
             if (raw.isBlank()) {
-                "模型没有返回内容，请重试一次"
+                if (en) "The model returned an empty reply—please try once more"
+                else "模型这回没返回内容，再试一次看看吧"
             } else {
-                "模型返回的路线读不出来（收到 ${raw.length} 字，已自动重试一次）。开头是：${raw.take(60)}"
+                if (en) "Couldn't read the route JSON (${raw.length} chars, retried once). Starts with: ${raw.take(60)}"
+                else "模型返回的路线格式没认出来（收到 ${raw.length} 字，已自动重试过）。开头是：${raw.take(60)}"
             }
         )
     }
@@ -120,10 +129,15 @@ class RouteRepository(
         val stops = plan.stops.map { stop ->
             async {
                 if (stop.located) return@async stop
-                val keyword = listOf("上海", stop.area, stop.name)
+                val targetName = stop.searchKey.ifBlank {
+                    CuratedSpots.searchKeyFor(stop.name) ?: stop.name
+                }
+                val keyword = listOf("上海", stop.area, targetName)
                     .filter { it.isNotBlank() }
                     .joinToString(" ")
                 val point = service.geocode(keyword)
+                    ?: service.searchByKeyword(targetName, limit = 1).firstOrNull()
+                        ?.let { it.lat to it.lng }
                 if (point == null) stop else stop.copy(lat = point.first, lng = point.second)
             }
         }.awaitAll()
@@ -140,7 +154,10 @@ class RouteRepository(
         want: Int = 10
     ): List<SpotCandidate> = withContext(Dispatchers.IO) {
         val settings = settingsStore.current()
-        if (!settings.hasKey) throw IllegalStateException("请先在设置里填写 API Key")
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        if (!settings.hasKey) {
+            throw IllegalStateException(if (en) "Please add an API Key in Settings first" else "请先到设置里填好 API Key 哦")
+        }
         val system = PromptTemplates.spotSystem()
         val prompt = PromptTemplates.spotUserPrompt(keywords, preference, want)
 
@@ -150,7 +167,11 @@ class RouteRepository(
         val retry = ask(
             settings = settings,
             system = system,
-            userPrompt = prompt + "\n\n再次强调：只输出上面那一个 JSON 对象，第一个字符是 {，最后一个字符是 }。",
+            userPrompt = prompt + if (en) {
+                "\n\nReminder: output ONLY that single JSON object, starting with { and ending with }."
+            } else {
+                "\n\n再次强调：只输出上面那一个 JSON 对象，第一个字符是 {，最后一个字符是 }。"
+            },
             jsonMode = false
         )?.let { parseSpots(it) }
         retry.orEmpty()
@@ -177,7 +198,8 @@ class RouteRepository(
                 SpotCandidate(
                     name = name,
                     area = o.text("area").trim(),
-                    blurb = o.text("blurb").trim()
+                    blurb = o.text("blurb").trim(),
+                    searchKey = o.text("search_key").trim().ifBlank { name }
                 )
             )
         }
@@ -195,11 +217,13 @@ class RouteRepository(
             val segment = text.substring(at, minOf(text.length, at + 400))
             val name = field(segment, "name")
             if (name.isNotBlank()) {
+                val sk = field(segment, "search_key")
                 list.add(
                     SpotCandidate(
                         name = name,
                         area = field(segment, "area"),
-                        blurb = field(segment, "blurb")
+                        blurb = field(segment, "blurb"),
+                        searchKey = sk.ifBlank { name }
                     )
                 )
             }
@@ -251,7 +275,9 @@ class RouteRepository(
         val stops = salvageStops(text)
         if (stops.isEmpty()) return null
         return RoutePlan(
-            routeName = field(text, "route_name").ifBlank { "AI 定制路线" },
+            routeName = field(text, "route_name").ifBlank {
+                if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) "AI Custom Route" else "AI 定制路线"
+            },
             theme = field(text, "theme"),
             stops = stops,
             transitionLogic = field(text, "transition_logic"),
@@ -277,26 +303,29 @@ class RouteRepository(
         val estimated = stops.sumOf { it.stayMin } + stops.size * 10
         val total = obj.optInt("total_min", 0)
         return RoutePlan(
-            routeName = obj.optString("route_name").trim().ifBlank { "AI 定制路线" },
-            theme = obj.optString("theme").trim(),
+            routeName = obj.text("route_name").trim().ifBlank {
+                if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) "AI Custom Route" else "AI 定制路线"
+            },
+            theme = obj.text("theme").trim(),
             stops = stops,
-            transitionLogic = obj.optString("transition_logic").trim(),
+            transitionLogic = obj.text("transition_logic").trim(),
             totalMin = if (total > 0) total else estimated
         )
     }
 
     private fun toStop(o: JSONObject?, index: Int): RouteStop? {
         if (o == null) return null
-        val name = o.optString("name").trim()
+        val name = o.text("name").trim()
         if (name.isEmpty()) return null
         val stay = o.optInt("stay_min", 30)
         return RouteStop(
             seq = o.optInt("seq", index + 1),
             name = name,
-            area = o.optString("area").trim(),
+            area = o.text("area").trim(),
             stayMin = if (stay > 0) stay else 30,
-            reason = o.optString("reason").trim(),
-            storyHook = o.optString("story_hook").trim()
+            reason = o.text("reason").trim(),
+            storyHook = o.text("story_hook").trim(),
+            searchKey = o.text("search_key").trim()
         )
     }
 

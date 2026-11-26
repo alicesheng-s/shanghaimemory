@@ -35,7 +35,8 @@ object Appearance {
             fontScale = settings.fontScale,
             importedFontPath = settings.importedFontPath,
             cornerDp = settings.cornerDp,
-            surfaceAlpha = settings.surfaceAlpha
+            surfaceAlpha = settings.surfaceAlpha,
+            language = settings.language
         )
     }
 

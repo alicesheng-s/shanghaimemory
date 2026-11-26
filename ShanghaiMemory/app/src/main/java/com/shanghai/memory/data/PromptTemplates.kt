@@ -2,33 +2,43 @@ package com.shanghai.memory.data
 
 import com.shanghai.memory.data.model.PoiInfo
 import com.shanghai.memory.data.model.SearchHit
+import com.shanghai.memory.ui.theme.ThemeState
 
 /**
  * 提示词定稿基准来自《不一样的上海记忆-项目需求定稿.md》第 8 节。
- *
- * 相对原稿的三处调整：
- * 1. P1 原文要求「模型侧先联网检索」，主路径改为 App 侧先调官方 Search API 取资料再生成，
- *    因此采用 P1 的结构与 F4 规定的尾注，配合 P1' 的「资料为依据」约束。
- * 2. 原稿是一段长文；0.2 起改为四段固定结构（地点介绍/经典历史事件/近期新闻/近期活动），
- *    便于分段渲染与「有则显示」的筛选。
- * 3. 明确禁用 Markdown 记号。模型偶尔仍会输出 `**`、`##`，渲染层另有容错解析兜底。
+ * 0.8.0 起支持中英双语讲述与策展，由 [ThemeState.isEnglish] 切换。
  */
 object PromptTemplates {
 
-    private const val SYSTEM_STORY =
-        "你是「上海城市记忆讲述者」，文风克制、具体、有现场感，只陈述你能够负责的事实。"
+    private val en: Boolean get() = ThemeState.isEnglish
 
-    private const val SYSTEM_CHAT = "你是「上海城市记忆讲述者」，正在和一个站在上海街头的人对话。\n" +
+    private const val SYSTEM_STORY_ZH =
+        "你是「上海城市记忆讲述者」，像一位懂建筑史又好聊的老朋友，文风克制、具体、有现场感，只讲有据可查的事实。"
+
+    private const val SYSTEM_STORY_EN =
+        "You are the 'Shanghai Memory Storyteller'—a knowledgeable, warm local guide standing beside the visitor. Write vividly and concretely in English, sticking strictly to verifiable facts."
+
+    private const val SYSTEM_CHAT_ZH = "你是「上海城市记忆讲述者」，正在和一个站在上海街头的人聊天。\n" +
         "回答用纯文本分段，每段不超过四行；不使用 Markdown 记号（不要 **、##、---、表格）。\n" +
-        "涉及年代、人名、数据而你不确定的，直接说「此事待考」，不要含糊其辞，也不要编造。"
+        "涉及年代、人名、数据而你不确定的，坦诚说「此事待考」，不要含糊，也不要编造。"
 
-    private const val SYSTEM_ROUTE =
+    private const val SYSTEM_CHAT_EN = "You are the 'Shanghai Memory Storyteller', chatting with someone standing on a Shanghai street.\n" +
+        "Reply in plain-text paragraphs (at most 4 lines each) with no Markdown syntax (no **, ##, ---, or tables).\n" +
+        "If any date, name, or figure cannot be verified, state 'To be verified' honestly—never guess or invent facts."
+
+    private const val SYSTEM_ROUTE_ZH =
         "你是上海城市漫游路线策展人，只输出符合要求的 JSON，不输出任何解释性文字。"
 
-    private const val SYSTEM_SPOT =
+    private const val SYSTEM_ROUTE_EN =
+        "You are a Shanghai walking-route curator. Output strictly valid JSON only, with no extra commentary."
+
+    private const val SYSTEM_SPOT_ZH =
         "你是熟悉上海城市史与工业遗产的向导，只输出符合要求的 JSON，不输出任何解释性文字。"
 
-    private const val SECTION_RULE = """输出格式（严格遵守）：
+    private const val SYSTEM_SPOT_EN =
+        "You are a guide to Shanghai's urban and industrial heritage. Output strictly valid JSON only, with no extra commentary."
+
+    private const val SECTION_RULE_ZH = """输出格式（严格遵守）：
 段标题各占一行、用中文方括号包住，正文另起一行；全部使用纯文本，禁止 **、##、---、表格等 Markdown 记号。
 【地点介绍】
 【经典历史事件】
@@ -36,12 +46,56 @@ object PromptTemplates {
 【近期活动】
 四段写完后，最后单独一行输出指定的尾注，不要加别的字。"""
 
-    private fun poiBlock(poi: PoiInfo): String =
+    private const val SECTION_RULE_EN = """Output format (follow strictly):
+Each section heading must sit on its own line in square brackets, followed by body text on the next line. Use plain text only—no **, ##, ---, or tables.
+[About This Place]
+[Key Historical Events]
+[Recent News]
+[Upcoming Events]
+After the four sections, end with the exact required footer line."""
+
+    private fun poiBlock(poi: PoiInfo): String = if (en) {
+        "[Place Info] Name: ${poi.name}; Type: ${poi.type}; Area: ${poi.locationText.ifBlank { "Shanghai" }}; Coordinates: ${poi.lng},${poi.lat}"
+    } else {
         "【地点信息】名称：${poi.name}；类型：${poi.type}；位置：${poi.locationText.ifBlank { "上海" }}；坐标：${poi.lng},${poi.lat}"
+    }
 
     /** 有检索资料时的用户提示词 */
     fun storyUserPrompt(poi: PoiInfo, hits: List<SearchHit>): String {
         val sources = hits.take(6).mapIndexed { i, h -> h.toPromptBlock(i) }.joinToString("\n\n")
+        if (en) {
+            return """
+You are the "Shanghai Memory Storyteller." A visitor is standing at a spot in Shanghai and wants to hear its story in English.
+Base every factual claim on the public sources below; do not invent details outside these sources:
+
+[Sources]
+$sources
+
+${poiBlock(poi)}
+
+First, check if this place is merely an ordinary convenience store, car dealer, chain café, regular apartment block, or commercial office with no meaningful public heritage.
+If so, do NOT pad with business registration or corporate trivia. Output only these exact four lines:
+[About This Place] This is an everyday commercial or residential venue with no shared public history to tell.
+[Key Historical Events] None.
+[Recent News] None.
+[Upcoming Events] None.
+
+Editorial rules:
+- [About This Place] must tell the story of this building or street: when it began, what it did, how it changed, and what stands here today.
+- Never list bureaucratic department duties or corporate org charts.
+- If you cannot cite even one reliable historical year, use the refusal format above.
+
+Sections (write in engaging, natural English):
+1. [About This Place] 120-180 words: what this place is, when it emerged, its original use, and its present state.
+2. [Key Historical Events] 1-2 specific events with years and people/institutions involved; mark uncertain details as "To be verified."
+3. [Recent News] 1-2 public updates from the past 1-2 years if present in the sources; otherwise write only "No reliable recent updates."
+4. [Upcoming Events] Current exhibitions, open hours, or public programs if present; otherwise write only "No confirmed upcoming events."
+5. Keep verified history separate from folklore (label legends clearly as "Legend").
+
+$SECTION_RULE_EN
+Footer line: Generated by AI with web search; for reference only.
+            """.trimIndent()
+        }
         return """
 你是「上海城市记忆讲述者」。用户正站在上海某处，向你询问脚下地点的故事。
 以下是从公开资料中检索到的该地点相关摘要，你的全部陈述必须以这些资料为依据，资料未覆盖的内容不得编写：
@@ -71,13 +125,41 @@ ${poiBlock(poi)}
 4. 【近期活动】当前可参与的展览、演出、市集或开放时间等实用信息；若无，整段只写「暂无可靠活动信息」。
 5. 史实与民间传说分开表述，传说必须注明「传说」。
 
-$SECTION_RULE
+$SECTION_RULE_ZH
 尾注固定为：内容由 AI 联网检索生成，仅供参考。
         """.trimIndent()
     }
 
     /** 检索不可用时的纯对话降级版 */
     fun storyUserPromptFallback(poi: PoiInfo): String {
+        if (en) {
+            return """
+You are the "Shanghai Memory Storyteller." A visitor is standing at a spot in Shanghai and wants to hear its story in English.
+
+${poiBlock(poi)}
+
+First, if this place is merely an everyday convenience store, car shop, chain eatery, or regular residential/office building with no public history, output only:
+[About This Place] This is an everyday commercial or residential venue with no shared public history to tell.
+[Key Historical Events] None.
+[Recent News] None.
+[Upcoming Events] None.
+
+Editorial rules:
+- Focus on the building or street's origin, transformation, and present look.
+- Never list bureaucratic duties or corporate org charts.
+- If you cannot give even one solid year, use the refusal lines above.
+
+Sections (write in warm, clear English):
+1. [About This Place] 120-180 words on its origins, past role, and present look.
+2. [Key Historical Events] 1-2 dated events with concrete people or institutions; write "To be verified" for anything uncertain.
+3. [Recent News] Write only "Offline mode: recent news cannot be verified."
+4. [Upcoming Events] Write only "Offline mode: upcoming events cannot be verified."
+5. Separate verified facts from folklore (mark legends clearly as "Legend").
+
+$SECTION_RULE_EN
+Footer line: Generated by AI without web verification; for reference only.
+            """.trimIndent()
+        }
         return """
 你是「上海城市记忆讲述者」。用户正站在上海某处，向你询问脚下地点的故事。
 
@@ -102,17 +184,28 @@ ${poiBlock(poi)}
 4. 【近期活动】同上，整段只写「未联网，暂无法确认活动信息」。
 5. 史实与民间传说分开表述，传说必须注明「传说」；若对该地历史并不掌握，如实说明后转写所在街区的地理与市井面貌，不要虚构历史。
 
-$SECTION_RULE
+$SECTION_RULE_ZH
 尾注固定为：内容由 AI 生成，未联网核实，仅供参考。
         """.trimIndent()
     }
 
-    fun storySystem(): String = SYSTEM_STORY
+    fun storySystem(): String = if (en) SYSTEM_STORY_EN else SYSTEM_STORY_ZH
 
-    fun chatSystem(): String = SYSTEM_CHAT
+    fun chatSystem(): String = if (en) SYSTEM_CHAT_EN else SYSTEM_CHAT_ZH
 
     /** 聊天里的连续追问：把当前地点的四段底稿作为背景，避免重复检索同一件事 */
-    fun followUpUserPrompt(poi: PoiInfo, draft: String, question: String): String = """
+    fun followUpUserPrompt(poi: PoiInfo, draft: String, question: String): String = if (en) {
+        """
+We are talking about [${poi.name}] (${poi.locationText.ifBlank { "Shanghai" }}). Here are the earlier notes prepared for this spot (reference without repeating verbatim):
+
+${draft.take(1600)}
+
+Visitor's question: $question
+
+Answer directly in natural English without re-splitting into four sections. Mark uncertain facts as "To be verified."
+        """.trimIndent()
+    } else {
+        """
 我们正在聊【${poi.name}】（${poi.locationText.ifBlank { "上海" }}）。下面是我先前为该地点整理的四段底稿，你可以引用，但不要整段复述：
 
 ${draft.take(1600)}
@@ -120,7 +213,8 @@ ${draft.take(1600)}
 我的问题：$question
 
 请直接回答，不要重新分四段；如涉及你不确定的史实，注明「此事待考」。
-    """.trimIndent()
+        """.trimIndent()
+    }
 
     fun routeUserPrompt(
         keywords: String,
@@ -129,6 +223,44 @@ ${draft.take(1600)}
         activities: String = "",
         fixedStops: List<String> = emptyList()
     ): String {
+        if (en) {
+            val duration = hours?.let { "[Target Duration] $it hours" } ?: "[Target Duration] Flexible (plan around 4 hours)"
+            val extra = notes.trim().ifBlank { "None" }
+            val activitySection = if (activities.isBlank()) {
+                "[Recent Events] None found online. Do not invent specific exhibition names or dates."
+            } else {
+                "[Recent Events] (Only reference verified events listed below):\n$activities"
+            }
+            val fixedSection = if (fixedStops.isEmpty()) "" else {
+                "[Mandatory Stops] Use ONLY these exact stops (do not add, drop, or replace):\n" +
+                    fixedStops.mapIndexed { i, s -> "${i + 1}. $s" }.joinToString("\n")
+            }
+            val stopRule = if (fixedStops.isEmpty()) {
+                "1. Pick 4-6 real, walkable/metro-accessible Shanghai landmarks closely matching the theme."
+            } else {
+                "1. stops must contain the exact ${fixedStops.size} mandatory stops above (reorder and set stay_min based on notes)."
+            }
+            return """
+You are a Shanghai walking-route curator. Design a realistic walking/transit route in English.
+
+[Keywords] $keywords
+$duration
+[Visitor Notes] $extra
+
+$fixedSection
+
+$activitySection
+
+Requirements:
+$stopRule
+2. Keep transit between consecutive stops under 40 minutes and cluster geographically where sensible.
+3. Output ONLY this compact single-line JSON (include official Chinese landmark name in search_key for map pin lookup):
+   {"route_name":"Route Title","theme":"Theme","stops":[{"seq":1,"name":"English Stop Name","search_key":"中文地标名","area":"District","stay_min":30,"reason":"Short reason","story_hook":"One-line memory hook"}],"transition_logic":"How to connect the stops","total_min":0}
+4. Respect length limits so JSON won't truncate: reason <= 22 words, story_hook <= 18 words, transition_logic <= 45 words.
+5. Never invent non-existent places.
+            """.trimIndent()
+        }
+
         val duration = hours?.let { "【预计游览时长】${it} 小时" } ?: "【预计游览时长】未指定，按 4 小时安排"
         val extra = notes.trim().ifBlank { "无" }
         val activitySection = if (activities.isBlank()) {
@@ -144,7 +276,6 @@ $activities
 把仍在进行或临近的活动编进对应站点，写清活动名与时间，并标明来自哪条资料；资料里没有的活动一律不许写。
             """.trimIndent()
         }
-        // 用户在选点页亲手挑过的站点是硬约束：只准用这些，不许改动名单
         val fixedSection = if (fixedStops.isEmpty()) {
             ""
         } else {
@@ -181,38 +312,63 @@ $stopRule
         """.trimIndent()
     }
 
-    fun routeSystem(): String = SYSTEM_ROUTE
+    fun routeSystem(): String = if (en) SYSTEM_ROUTE_EN else SYSTEM_ROUTE_ZH
 
     /**
      * 进入策划通道时的开场白。
-     * 只有确实带着预设站点进来才列站名；用户自己敲关键词时不凭空塞入预设路线。
      */
     fun planOpener(routeName: String, stops: List<String>): String {
+        if (en) {
+            val head = if (stops.isEmpty()) {
+                "Let's design \"$routeName\" together from scratch."
+            } else {
+                "Let's shape \"$routeName\" around your pace.\n\nSelected stops: ${stops.joinToString(" → ")}"
+            }
+            return head + "\n\n" +
+                "Before I arrange the order and timing, tell me a little about:\n" +
+                "1. How long would you like to walk today?\n" +
+                "2. What draws you most—old industrial machinery, architecture, or human stories?\n" +
+                "3. Who's walking with you (solo, friends, elders, or kids)?\n\n" +
+                "Just reply in a sentence or two and I'll build your route."
+        }
         val head = if (stops.isEmpty()) {
-            "我们从零来排「$routeName」这条路线，站点由你我一起定。"
+            "我们从零开始排「$routeName」这条路线，去哪几处由你我一起定。"
         } else {
-            "我们来把「$routeName」走成一条属于你的路线。\n\n已选站点：${stops.joinToString(" → ")}"
+            "我们来把「$routeName」排成一趟顺路又好逛的行程。\n\n已选定站点：${stops.joinToString(" → ")}"
         }
         return head + "\n\n" +
-            "先确认几件事，我好据此调整：\n" +
-            "1. 你能走多久？大概几小时、能接受多少步行量？\n" +
-            "2. 有没有必须看或不想看的内容？例如更想看厂房机器，还是更想听人的故事。\n" +
-            "3. 同行的是自己、朋友，还是长辈或小孩？节奏会不一样。\n\n" +
-            "直接说两三句就行，我按你的回答排站点和停留时间。"
+            "动手排顺序之前，先告诉我三件小事：\n" +
+            "1. 今天大概想逛几个小时，能接受多少步行量？\n" +
+            "2. 更想看老机器老厂房，还是想听人情往事？\n" +
+            "3. 是自己一个人逛，还是带朋友、长辈或小朋友？\n\n" +
+            "随便回两三句话就行，我马上按你的节奏把路线理出来。"
     }
 
     /** 连通性测试用的极短提示词，只要首字延迟与鉴权状态 */
-    fun pingUserPrompt(): String = "只回复两个字：在线"
+    fun pingUserPrompt(): String = if (en) "Reply with one word only: Online" else "只回复两个字：在线"
 
     // ---- 自定义路线的地点检索 ----
 
-    fun spotSystem(): String = SYSTEM_SPOT
+    fun spotSystem(): String = if (en) SYSTEM_SPOT_EN else SYSTEM_SPOT_ZH
 
-    /**
-     * 让模型按关键词与偏好给出候选地点。
-     * 关键词支持 and / or / not 的写法，原样交给模型去理解，再要求它按布尔含义挑选。
-     */
     fun spotUserPrompt(keywords: String, preference: String, want: Int = 10): String {
+        if (en) {
+            val focus = when (preference) {
+                "活动" -> "Prioritize places currently open with active exhibitions, markets, or events, and mention what's happening in blurb."
+                "历史建筑" -> "Prioritize historic buildings, old mills, and warehouses where the original character remains visible."
+                else -> "Balance historic architecture with lively present-day spaces."
+            }
+            return """The visitor wants to explore places in Shanghai matching: $keywords
+Keywords may include boolean operators (and, or, not); interpret them logically rather than as literal place names.
+$focus
+Return $want concrete places in Shanghai:
+1. Every place must genuinely exist in Shanghai and be findable on maps.
+2. Make sure they are distinct places (not two buildings inside the same park).
+3. Write blurb in English (under 25 words) explaining what it used to be and what it is today.
+4. Put the official Chinese landmark name in "search_key" so the local map can pin it accurately.
+5. Output ONLY this JSON starting with { and ending with }, no code fences or extra text:
+{"spots":[{"name":"English Name","search_key":"中文地标名","area":"District + Street","blurb":"One-line intro"}]}"""
+        }
         val focus = when (preference) {
             "活动" -> "优先给近一两年仍在开放、正在办展或有活动的场所，并在 blurb 里写清它现在在做什么。"
             "历史建筑" -> "优先给本身是有年头、能看出建筑年代与原来用途的老房子、老厂、老仓库。"

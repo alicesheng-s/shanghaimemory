@@ -1,5 +1,7 @@
 package com.shanghai.memory.data
 
+import com.shanghai.memory.ui.theme.ThemeState
+
 /**
  * 预设主题的候选地点库。
  *
@@ -11,7 +13,7 @@ data class CuratedSpot(
     val name: String,
     val area: String,
     val blurb: String,
-    /** 高德检索用的关键词，默认与 name 相同；行政区重名时加限定词 */
+    /** 高德检索用的关键词，默认与 name 相同；英文模式或行政区重名时保留中文检索词 */
     val searchKey: String = name,
 )
 
@@ -25,7 +27,7 @@ data class SpotTheme(
 object CuratedSpots {
 
     /** 电力之旅：从第一盏电灯到远东最大的烟囱 */
-    private val POWER = listOf(
+    private val POWER_ZH = listOf(
         CuratedSpot(
             name = "杨树浦电厂遗迹公园",
             area = "杨浦滨江 · 杨树浦路2800号",
@@ -68,8 +70,59 @@ object CuratedSpots {
         ),
     )
 
+    private val POWER_EN = listOf(
+        CuratedSpot(
+            name = "Yangshupu Power Plant Relic Park",
+            area = "Yangpu Riverfront · 2800 Yangshupu Rd",
+            blurb = "Built in 1913 as the Far East's largest thermal power plant; its 105m chimney greeted ships entering the Huangpu. Retired in 2015 and reborn as a waterfront park.",
+            searchKey = "杨树浦电厂遗迹公园"
+        ),
+        CuratedSpot(
+            name = "Yangshupu Waterworks",
+            area = "Yangpu · 830 Yangshupu Rd",
+            blurb = "Commissioned on August 1, 1883 as China's first modern waterworks. Its British castle-style pump house still supplies tap water today.",
+            searchKey = "杨树浦水厂"
+        ),
+        CuratedSpot(
+            name = "Power Station of Art (PSA)",
+            area = "Huangpu · 200 Huayuangang Rd",
+            blurb = "Former Nanshi Power Plant tracing back to 1897. Transformed into China's first state contemporary art museum, keeping its 165m chimney thermometer.",
+            searchKey = "上海当代艺术博物馆"
+        ),
+        CuratedSpot(
+            name = "WorldSkills Museum",
+            area = "Yangpu Riverfront · 1578 Yangshupu Rd",
+            blurb = "Formerly the 1921 Wing On Textile Warehouse—twin concrete towers that once ranked among China's largest industrial depots.",
+            searchKey = "世界技能博物馆"
+        ),
+        CuratedSpot(
+            name = "Green Hill",
+            area = "Yangpu Riverfront · 1500 Yangshupu Rd",
+            blurb = "A former tobacco machine repair warehouse carved into terraced green ramps leading directly toward the Huangpu River.",
+            searchKey = "绿之丘"
+        ),
+        CuratedSpot(
+            name = "Soap Dream Space",
+            area = "Yangpu Riverfront · near 2310 Yangshupu Rd",
+            blurb = "Site of the historic Shanghai Soap Factory where household brands began; an authentic soap production line remains on display.",
+            searchKey = "皂梦空间"
+        ),
+        CuratedSpot(
+            name = "Wool & Linen Warehouse",
+            area = "Yangpu Riverfront · near 1500 Yangshupu Rd",
+            blurb = "A 1920s textile warehouse preserving fair-faced brick walls and concrete stairs, now hosting waterfront exhibitions.",
+            searchKey = "毛麻仓库旧址"
+        ),
+        CuratedSpot(
+            name = "Shanghai University of Electric Power (Pingliang Campus)",
+            area = "Yangpu · 2103 Pingliang Rd",
+            blurb = "Founded in 1951 as Shanghai Electric Power School, training generations of engineers who kept the city's grid running.",
+            searchKey = "上海电力大学（平凉路校区）"
+        ),
+    )
+
     /** 工业之旅：从洋务局的船坞到苏州河的纱厂 */
-    private val INDUSTRY = listOf(
+    private val INDUSTRY_ZH = listOf(
         CuratedSpot(
             name = "江南造船厂旧址",
             area = "黄浦 · 鲁班路一带（江南造船大厦旁）",
@@ -113,20 +166,98 @@ object CuratedSpots {
         ),
     )
 
-    val themes: List<SpotTheme> = listOf(
-        SpotTheme(
-            key = "power",
-            title = "电力之旅",
-            subtitle = "从 1882 年的电灯到 1913 年的烟囱，电线走过的路",
-            spots = POWER
+    private val INDUSTRY_EN = listOf(
+        CuratedSpot(
+            name = "Former Jiangnan Shipyard Site",
+            area = "Huangpu · near Luban Rd",
+            blurb = "Founded in 1865 as Jiangnan Arsenal, birthplace of China's first self-built steam warship; its docks now anchor the Expo waterfront.",
+            searchKey = "江南造船厂旧址"
         ),
-        SpotTheme(
-            key = "industry",
-            title = "工业之旅",
-            subtitle = "船坞、纱厂、仓库与码头，黄浦江和苏州河上的生产现场",
-            spots = INDUSTRY
+        CuratedSpot(
+            name = "1933 Old Millfun",
+            area = "Hongkou · 611 Liyang Rd",
+            blurb = "A 1933 municipal abattoir with umbrella columns and spiraling cattle ramps—an architectural labyrinth now hosting galleries and cafes.",
+            searchKey = "1933 老场坊"
+        ),
+        CuratedSpot(
+            name = "Sihang Warehouse",
+            area = "Jing'an · 1 Guangfu Rd",
+            blurb = "Joint warehouse of four banks defended in the 1937 Battle of Shanghai; its bullet-scarred west wall is preserved inside the memorial.",
+            searchKey = "四行仓库"
+        ),
+        CuratedSpot(
+            name = "Shanghai International Fashion Center",
+            area = "Yangpu · 2866 Yangshupu Rd",
+            blurb = "Formerly the 17th Cotton Mill (1920s Yuho Mill), famous for sawtooth factory roofs turned into runway and retail halls.",
+            searchKey = "上海国际时尚中心"
+        ),
+        CuratedSpot(
+            name = "Minsheng Wharf 80,000-Ton Silos",
+            area = "Pudong · 3 Minsheng Rd",
+            blurb = "Thirty towering 1970s grain cylinders standing side by side on the Huangpu River, now repurposed for monumental art exhibitions.",
+            searchKey = "民生码头八万吨筒仓"
+        ),
+        CuratedSpot(
+            name = "Minghua Sugar Refinery Warehouse",
+            area = "Yangpu Riverfront · 415 Anpu Rd",
+            blurb = "Built in 1924 as a sugar warehouse before becoming a chemical plant, easily spotted by its red-brick sawtooth roof.",
+            searchKey = "明华糖厂仓库旧址"
+        ),
+        CuratedSpot(
+            name = "M50 Creative Park",
+            area = "Putuo · 50 Moganshan Rd",
+            blurb = "Once Chunming Woolen Mill on Suzhou Creek; artists moved in around 2000, sparking Shanghai's factory-to-gallery revival.",
+            searchKey = "M50创意园"
+        ),
+        CuratedSpot(
+            name = "Shanghai General Post Office",
+            area = "Hongkou · 276 North Suzhou Rd",
+            blurb = "Completed in 1924 with a baroque clock tower and Corinthian columns; the grand second-floor counter hall still serves mail today.",
+            searchKey = "上海邮政总局大楼"
         ),
     )
 
+    val themes: List<SpotTheme>
+        get() = if (ThemeState.isEnglish) {
+            listOf(
+                SpotTheme(
+                    key = "power",
+                    title = "Power Trail",
+                    subtitle = "From 1882 Bund lamps to the 1913 powerhouse—following the city's grid",
+                    spots = POWER_EN
+                ),
+                SpotTheme(
+                    key = "industry",
+                    title = "Industry Trail",
+                    subtitle = "Shipyards, cotton mills, silos, and workshops along both rivers",
+                    spots = INDUSTRY_EN
+                ),
+            )
+        } else {
+            listOf(
+                SpotTheme(
+                    key = "power",
+                    title = "电力之旅",
+                    subtitle = "从 1882 年的电灯到 1913 年的烟囱，电线走过的路",
+                    spots = POWER_ZH
+                ),
+                SpotTheme(
+                    key = "industry",
+                    title = "工业之旅",
+                    subtitle = "船坞、纱厂、仓库与码头，黄浦江和苏州河上的生产现场",
+                    spots = INDUSTRY_ZH
+                ),
+            )
+        }
+
     fun byKey(key: String?): SpotTheme? = themes.firstOrNull { it.key == key }
+
+    /** 英文模式下预设点位若未被模型带上 search_key，可反查对应的中文标准地名 */
+    fun searchKeyFor(name: String): String? {
+        val target = name.trim()
+        if (target.isEmpty()) return null
+        val match = (POWER_EN + INDUSTRY_EN + POWER_ZH + INDUSTRY_ZH)
+            .firstOrNull { it.name.equals(target, ignoreCase = true) }
+        return match?.searchKey
+    }
 }

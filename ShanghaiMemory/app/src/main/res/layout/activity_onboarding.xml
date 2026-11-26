@@ -224,7 +224,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="墨金"
+                            android:text="@string/onb_p3_ink_gold"
                             android:textSize="12sp"
                             android:textColor="?attr/shText" />
                     </LinearLayout>
@@ -251,7 +251,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="樱花粉"
+                            android:text="@string/onb_p3_sakura"
                             android:textSize="12sp"
                             android:textColor="?attr/shText" />
                     </LinearLayout>
@@ -278,7 +278,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="青瓷"
+                            android:text="@string/onb_p3_celadon"
                             android:textSize="12sp"
                             android:textColor="?attr/shText" />
                     </LinearLayout>

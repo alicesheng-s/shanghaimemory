@@ -27,6 +27,10 @@ data class SpotCandidate(
     val distanceText: String
         get() = when {
             distanceMeters < 0f -> ""
+            com.shanghai.memory.ui.theme.ThemeState.isEnglish -> when {
+                distanceMeters < 950f -> "${distanceMeters.toInt()} m"
+                else -> "%.1f km".format(distanceMeters / 1000f)
+            }
             distanceMeters < 950f -> "${distanceMeters.toInt()} 米"
             else -> "%.1f 公里".format(distanceMeters / 1000f)
         }

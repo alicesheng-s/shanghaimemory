@@ -86,6 +86,7 @@ class SettingsActivity : ThemedActivity() {
         binding.txtAccent.setOnClickListener { chooseAccent() }
         binding.txtFont.setOnClickListener { chooseFont() }
 
+        binding.menuLanguage.setOnClickListener { chooseLanguage() }
         binding.menuAppearance.setOnClickListener { showPage(PAGE_APPEARANCE) }
         binding.menuModel.setOnClickListener { showPage(PAGE_MODEL) }
         binding.menuReading.setOnClickListener { showPage(PAGE_READING) }
@@ -137,7 +138,9 @@ class SettingsActivity : ThemedActivity() {
                     font = font,
                     fontScale = scale,
                     importedFontPath = appearance.importedFontPath,
-                    cornerDp = ThemeState.cornerDp
+                    cornerDp = ThemeState.cornerDp,
+                    surfaceAlpha = ThemeState.surfaceAlpha,
+                    language = ThemeState.language
                 )
                 applyAppearance(binding.root)
             }
@@ -272,11 +275,15 @@ class SettingsActivity : ThemedActivity() {
         font = FontId.of(settings.fontId)
         binding.txtFontValue.text =
             if (font == FontId.IMPORTED && settings.importedFontPath.isNotBlank()) {
-                "我导入的字体"
+                getString(R.string.font_imported_label)
             } else {
                 font.label
             }
         binding.txtFontDesc.text = font.blurb
+
+        binding.txtLanguageValue.text = getString(
+            if (settings.language == "en") R.string.settings_language_en else R.string.settings_language_zh
+        )
 
         binding.sbFontScale.progress = progressOfScale(settings.fontScale)
         binding.txtFontScaleValue.text = getString(R.string.font_scale_value, settings.fontScale)
@@ -288,7 +295,9 @@ class SettingsActivity : ThemedActivity() {
         // 这时 palette 字段刚从落盘值回填，守卫不会误拦。
         if (pendingAccentPicker) {
             pendingAccentPicker = false
-            binding.root.post { chooseAccent() }
+            binding.root.post {
+                if (!isFinishing && !isDestroyed) chooseAccent()
+            }
         }
     }
 
@@ -340,14 +349,52 @@ class SettingsActivity : ThemedActivity() {
         if (currentPage != PAGE_MENU) showPage(PAGE_MENU) else super.onBackPressed()
     }
 
+    private fun chooseLanguage() {
+        val labels = arrayOf(
+            getString(R.string.settings_language_zh),
+            getString(R.string.settings_language_en)
+        )
+        val checked = if (appearance.language == "en") 1 else 0
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_language_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                dialog.dismiss()
+                val next = if (which == 1) "en" else "zh"
+                if (next == appearance.language) return@setSingleChoiceItems
+                lifecycleScope.launch {
+                    store.setLanguage(next)
+                    refreshAppearance()
+                }
+            }
+            .setNegativeButton(R.string.common_cancel, null)
+            .show()
+    }
+
     private fun updateHint() {
+        val en = ThemeState.isEnglish
         val base = binding.etBaseurl.text.toString().trim()
         val insecure = base.startsWith("http://") && !isLoopback(base)
         val text = when {
-            insecure -> "这个端点用的是 http://，Key 与请求内容会明文经过网络。能换 https 就换，只有本机或可信局域网才建议保留。"
-            provider.isCustom -> "自定义端点需为 OpenAI 兼容的 /v1 前缀，程序会自动拼接 /chat/completions。"
-            provider.hasWebSearch -> "该服务商支持联网检索：会先取公开资料，再交给模型讲述，并在结尾标注来源性质。"
-            else -> "该服务商无官方检索接口，将以纯对话方式生成，结尾标注「未联网核实」。"
+            insecure -> if (en) {
+                "This endpoint uses plain http://, so your key and messages travel unencrypted. Switch to https:// unless this is a trusted local gateway."
+            } else {
+                "这个地址用的是 http://，密钥和内容会明文传输。能换 https 尽量换，只有本机或自家局域网才建议继续用。"
+            }
+            provider.isCustom -> if (en) {
+                "Custom endpoints should use an OpenAI-compatible /v1 prefix; /chat/completions is appended automatically."
+            } else {
+                "自定义地址填写兼容 OpenAI 的 /v1 前缀即可，应用会自动拼接 /chat/completions。"
+            }
+            provider.hasWebSearch -> if (en) {
+                "This provider supports web search: public sources are checked first before the story is told."
+            } else {
+                "这家服务商支持边查资料边讲：会先检索公开资料，再为你组织故事并标明来源。"
+            }
+            else -> if (en) {
+                "This provider has no built-in web search—stories will rely on model knowledge alone."
+            } else {
+                "这家服务商暂不提供官方检索接口，会直接根据模型记忆讲述，结尾会注明「未联网核实」。"
+            }
         }
         binding.txtStatus.text = text
     }
@@ -377,14 +424,14 @@ class SettingsActivity : ThemedActivity() {
                     // 没有触发重建（本来就在自定义色板上）时，等一会儿自己把选色弹出来；
                     // 触发了重建的话这个 post 会随旧视图一起丢，改由 onCreate 接手。
                     binding.root.postDelayed({
-                        if (pendingAccentPicker) {
+                        if (!isFinishing && !isDestroyed && pendingAccentPicker) {
                             pendingAccentPicker = false
                             chooseAccent()
                         }
                     }, 400L)
                 }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
@@ -418,7 +465,7 @@ class SettingsActivity : ThemedActivity() {
                     refreshAppearance()
                 }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
@@ -427,12 +474,22 @@ class SettingsActivity : ThemedActivity() {
             Toast.makeText(this, R.string.accent_need_custom, Toast.LENGTH_SHORT).show()
             return
         }
-        val presets = listOf(
-            "赤陶" to "#E06A4F", "琥珀" to "#E0A23A", "苔绿" to "#7FA05B",
-            "松青" to "#4FA39B", "靛蓝" to "#5B7FD1", "藕紫" to "#9A6FBF",
-            "樱粉" to "#F0A2B8", "赭石" to "#B5763F", "石墨" to "#8A9099",
-            "湖蓝" to "#4E8FB8", "青瓷" to "#8FBFA8", "绛紫" to "#8E5A7A"
-        )
+        val en = ThemeState.isEnglish
+        val presets = if (en) {
+            listOf(
+                "Terracotta" to "#E06A4F", "Amber" to "#E0A23A", "Moss" to "#7FA05B",
+                "Pine Teal" to "#4FA39B", "Indigo" to "#5B7FD1", "Wisteria" to "#9A6FBF",
+                "Sakura" to "#F0A2B8", "Ochre" to "#B5763F", "Graphite" to "#8A9099",
+                "Lake Blue" to "#4E8FB8", "Celadon" to "#8FBFA8", "Plum" to "#8E5A7A"
+            )
+        } else {
+            listOf(
+                "赤陶" to "#E06A4F", "琥珀" to "#E0A23A", "苔绿" to "#7FA05B",
+                "松青" to "#4FA39B", "靛蓝" to "#5B7FD1", "藕紫" to "#9A6FBF",
+                "樱粉" to "#F0A2B8", "赭石" to "#B5763F", "石墨" to "#8A9099",
+                "湖蓝" to "#4E8FB8", "青瓷" to "#8FBFA8", "绛紫" to "#8E5A7A"
+            )
+        }
         val items = (
             listOf(getString(R.string.accent_preset)) +
                 presets.map { "${it.first}    ${it.second}" } +
@@ -459,11 +516,12 @@ class SettingsActivity : ThemedActivity() {
                     }
                 }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
     private fun askHexColor() {
+        val en = ThemeState.isEnglish
         val input = EditText(this).apply {
             hint = "#F0A2B8"
             setText(appearance.customAccent.trimStart('#'))
@@ -483,8 +541,8 @@ class SettingsActivity : ThemedActivity() {
         val dialog = MaterialAlertDialogBuilder(this)
             .setTitle(R.string.settings_accent)
             .setView(box)
-            .setPositiveButton("确定", null)
-            .setNegativeButton("取消", null)
+            .setPositiveButton(R.string.common_confirm, null)
+            .setNegativeButton(R.string.common_cancel, null)
             .create()
         dialog.setOnShowListener {
             dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
@@ -495,7 +553,7 @@ class SettingsActivity : ThemedActivity() {
                     null
                 }
                 if (color == null) {
-                    input.error = "要 6 位十六进制，例如 F0A2B8"
+                    input.error = if (en) "Enter 6 hex digits, e.g. F0A2B8" else "请输入 6 位十六进制色值，比如 F0A2B8"
                     return@setOnClickListener
                 }
                 dialog.dismiss()
@@ -530,7 +588,7 @@ class SettingsActivity : ThemedActivity() {
                     }
                 }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
@@ -608,29 +666,31 @@ class SettingsActivity : ThemedActivity() {
                     applySettings(store.current())
                 }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
     /** 用当前界面上的 Key 与 Base URL 拉一次 /models，直接填进模型框。 */
     private fun fetchModels() {
+        val en = ThemeState.isEnglish
         val draft = currentInput()
         if (draft.apiKey.isBlank()) {
-            binding.txtStatus.text = "先填 API Key，才能拉取模型列表。"
+            binding.txtStatus.text = if (en) "Please enter your API Key first." else "先填好 API Key，才能帮你拉取模型列表。"
             return
         }
 
         modelsJob?.cancel()
         binding.btnModels.isEnabled = false
-        binding.txtStatus.text = "正在请求 ${draft.modelsEndpoint} …"
+        binding.txtStatus.text = if (en) "Fetching models from ${draft.modelsEndpoint}…" else "正在请求 ${draft.modelsEndpoint} …"
 
         modelsJob = lifecycleScope.launch {
             try {
                 val list = ModelCatalog.list(draft)
-                binding.txtStatus.text = "拉取到 ${list.size} 个模型，选一个吧。"
+                binding.txtStatus.text = if (en) "Found ${list.size} models—pick one." else "拉取到了 ${list.size} 个可用模型，选一个吧。"
                 showModels(list)
             } catch (t: Throwable) {
-                binding.txtStatus.text = "获取失败：" + (t.message ?: "未知错误")
+                val msg = t.message ?: if (en) "unknown error" else "未知错误"
+                binding.txtStatus.text = if (en) "Fetch failed: $msg" else "没拉取成功：$msg"
             } finally {
                 binding.btnModels.isEnabled = true
             }
@@ -638,6 +698,7 @@ class SettingsActivity : ThemedActivity() {
     }
 
     private fun showModels(list: List<ModelInfo>) {
+        val en = ThemeState.isEnglish
         val labels = list.map { model ->
             buildString {
                 append(model.displayName)
@@ -651,13 +712,17 @@ class SettingsActivity : ThemedActivity() {
         }.toTypedArray()
 
         MaterialAlertDialogBuilder(this)
-            .setTitle("可用模型（${list.size}）")
+            .setTitle(if (en) "Available Models (${list.size})" else "可用模型（${list.size}）")
             .setItems(labels) { _, which ->
                 val picked = list[which]
                 binding.etModel.setText(picked.id)
-                binding.txtStatus.text = "已填入 ${picked.id}，记得点保存。"
+                binding.txtStatus.text = if (en) {
+                    "Selected ${picked.id}. Tap Save to keep it."
+                } else {
+                    "已填入 ${picked.id}，别忘了点一下保存。"
+                }
             }
-            .setNegativeButton("取消", null)
+            .setNegativeButton(R.string.common_cancel, null)
             .show()
     }
 
@@ -683,22 +748,19 @@ class SettingsActivity : ThemedActivity() {
             fontId = font.key,
             fontScale = scaleOf(binding.sbFontScale.progress),
             importedFontPath = appearance.importedFontPath,
-            // 下面几项界面上没有对应控件，沿用当前快照。
-            // 漏掉它们的话，任何拿 draft 整体覆盖的调用都会把检索端点、温度、
-            // 背景透明度、引导完成标记悄悄重置成默认值
             customSearchUrl = appearance.customSearchUrl,
             temperature = appearance.temperature,
             surfaceAlpha = appearance.surfaceAlpha,
-            onboarded = appearance.onboarded
+            onboarded = appearance.onboarded,
+            language = appearance.language
         )
     }
 
     private fun save() {
+        val en = ThemeState.isEnglish
         val draft = currentInput()
-        // Key 只决定聊天与检索能不能用，不该拦住外观、朗读、地标筛选这些页面的保存：
-        // 早先这里无条件 return，用户在别的子页点保存会静默失败，还以为已经存上了
         if (draft.apiKey.isBlank() && currentPage == PAGE_MODEL) {
-            binding.txtStatus.text = "先填 API Key，再保存。"
+            binding.txtStatus.text = if (en) "Please enter your API Key before saving." else "先填好 API Key 再保存吧。"
             return
         }
         lifecycleScope.launch {
@@ -708,27 +770,29 @@ class SettingsActivity : ThemedActivity() {
             store.setWebSearch(draft.webSearchEnabled)
             store.setTtsEnabled(draft.ttsEnabled)
             store.setTtsSpeed(draft.ttsSpeed)
-            // 关键词框可能一直没失焦，保存时再兜一次
             store.setExtraKeywords(draft.extraKeywords)
             binding.txtStatus.text = if (draft.apiKey.isBlank()) {
-                "已保存。还没填 API Key，聊天与检索暂时不可用。"
+                if (en) "Saved. Add an API Key anytime to unlock AI stories."
+                else "已保存。还没填 API Key，故事暂时先用离线底稿顶着。"
             } else {
-                "已保存到本机。Key 仅存于本应用的 DataStore。"
+                if (en) "Saved locally on this device."
+                else "已经稳妥保存在手机本地。"
             }
-            Toast.makeText(this@SettingsActivity, "已保存", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@SettingsActivity, R.string.settings_saved, Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun testConnection() {
+        val en = ThemeState.isEnglish
         val draft = currentInput()
         if (draft.apiKey.isBlank() || draft.model.isBlank()) {
-            binding.txtStatus.text = "Key 与模型名都要填。"
+            binding.txtStatus.text = if (en) "Both API Key and Model name are needed." else "API Key 和模型名都要填上才能测哦。"
             return
         }
 
         testJob?.cancel()
         binding.btnTest.isEnabled = false
-        binding.txtStatus.text = "正在请求 ${draft.chatEndpoint} …"
+        binding.txtStatus.text = if (en) "Connecting to ${draft.chatEndpoint}…" else "正在试着连接 ${draft.chatEndpoint} …"
 
         testJob = lifecycleScope.launch {
             val start = SystemClock.elapsedRealtime()
@@ -737,7 +801,7 @@ class SettingsActivity : ThemedActivity() {
             try {
                 ChatClient().stream(
                     settings = draft,
-                    systemPrompt = "你是连通性测试助手，只按要求回复，不作解释。",
+                    systemPrompt = if (en) "You are a connectivity test helper. Reply briefly as asked." else "你是连通性测试助手，只按要求回复，不作解释。",
                     userPrompt = PromptTemplates.pingUserPrompt(),
                     maxTokens = 32
                 ).collect { chunk ->
@@ -745,14 +809,24 @@ class SettingsActivity : ThemedActivity() {
                     reply.append(chunk)
                 }
                 val total = SystemClock.elapsedRealtime() - start
-                binding.txtStatus.text = buildString {
-                    append("连通正常。\n")
-                    append("首字 ").append(if (firstCharMs < 0) "—" else "${firstCharMs} ms")
-                    append(" · 总计 ").append(total).append(" ms\n")
-                    append("回复：").append(reply.toString().trim().take(40))
+                binding.txtStatus.text = if (en) {
+                    buildString {
+                        append("Connected.\n")
+                        append("First token ").append(if (firstCharMs < 0) "—" else "${firstCharMs} ms")
+                        append(" · Total ").append(total).append(" ms\n")
+                        append("Reply: ").append(reply.toString().trim().take(40))
+                    }
+                } else {
+                    buildString {
+                        append("连上啦！\n")
+                        append("首字响应 ").append(if (firstCharMs < 0) "—" else "${firstCharMs} ms")
+                        append(" · 总耗时 ").append(total).append(" ms\n")
+                        append("对方回复：").append(reply.toString().trim().take(40))
+                    }
                 }
             } catch (t: Throwable) {
-                binding.txtStatus.text = "连接失败：" + (t.message ?: "未知错误")
+                val msg = t.message ?: if (en) "unknown error" else "未知错误"
+                binding.txtStatus.text = if (en) "Connection failed: $msg" else "没能连上：$msg"
             } finally {
                 binding.btnTest.isEnabled = true
             }
@@ -764,7 +838,7 @@ class SettingsActivity : ThemedActivity() {
     private fun progressOf(speed: Float): Int = ((speed - 0.5f) / 0.05f).roundToInt().coerceIn(0, 20)
 
     private fun showSpeed(speed: Float) {
-        binding.txtTtsSpeed.text = "语速 %.1f×".format(speed)
+        binding.txtTtsSpeed.text = getString(R.string.settings_tts_speed, speed)
     }
 
     /**
@@ -784,7 +858,7 @@ class SettingsActivity : ThemedActivity() {
         binding.txtTtsState.text = speaker.detail
         speaker.onStateChanged = { speaking ->
             binding.btnTtsTest.text =
-                if (speaking) "正在朗读…" else getString(R.string.settings_tts_test)
+                getString(if (speaking) R.string.settings_tts_testing else R.string.settings_tts_test)
         }
         speaker.speak(getString(R.string.settings_preview_text), speedOf(binding.sbTtsSpeed.progress))
     }

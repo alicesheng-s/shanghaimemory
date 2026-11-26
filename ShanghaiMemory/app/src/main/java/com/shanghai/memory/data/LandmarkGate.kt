@@ -151,25 +151,28 @@ object LandmarkGate {
     }
 
     /** 高德的分类串（购物服务;专卖店;自行车专卖店）对用户没意义，翻成人话 */
-    fun friendlyType(type: String): String = when (categoryOf(type)) {
-        "购物服务" -> "店铺"
-        "餐饮服务" -> "餐饮"
-        "生活服务" -> "生活服务"
-        "医疗保健服务" -> "医疗"
-        "汽车服务", "摩托车服务" -> "车行"
-        "体育休闲服务" -> "休闲场所"
-        "金融保险服务" -> "金融网点"
-        "公司企业" -> "单位"
-        "住宿服务" -> "住宿"
-        "商务住宅" -> "住宅区"
-        "风景名胜" -> "景点"
-        "科教文化服务" -> "文化场所"
-        "交通设施服务" -> "交通设施"
-        "地名地址信息" -> "地点"
-        "政府机构及社会团体" -> "机关"
-        "公共设施" -> "公共设施"
-        "" -> ""
-        else -> categoryOf(type)
+    fun friendlyType(type: String): String {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        return when (categoryOf(type)) {
+            "购物服务" -> if (en) "Shop" else "店铺"
+            "餐饮服务" -> if (en) "Dining" else "餐饮"
+            "生活服务" -> if (en) "Services" else "生活服务"
+            "医疗保健服务" -> if (en) "Medical" else "医疗"
+            "汽车服务", "摩托车服务" -> if (en) "Auto Shop" else "车行"
+            "体育休闲服务" -> if (en) "Recreation" else "休闲场所"
+            "金融保险服务" -> if (en) "Finance" else "金融网点"
+            "公司企业" -> if (en) "Office" else "单位"
+            "住宿服务" -> if (en) "Lodging" else "住宿"
+            "商务住宅" -> if (en) "Residential" else "住宅区"
+            "风景名胜" -> if (en) "Landmark" else "景点"
+            "科教文化服务" -> if (en) "Cultural Site" else "文化场所"
+            "交通设施服务" -> if (en) "Transit" else "交通设施"
+            "地名地址信息" -> if (en) "Place" else "地点"
+            "政府机构及社会团体" -> if (en) "Civic" else "机关"
+            "公共设施" -> if (en) "Public Facility" else "公共设施"
+            "" -> ""
+            else -> categoryOf(type)
+        }
     }
 
     /**
@@ -178,20 +181,35 @@ object LandmarkGate {
      * 分支顺序要和 [isWorthTelling] 的判定顺序对齐，否则理由会说错一条。
      */
     fun refusalReason(poi: PoiInfo, policy: GatePolicy = GatePolicy()): String {
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
         val name = poi.name
         val category = categoryOf(poi.type)
-        val label = category.ifBlank { "场所" }
+        val label = friendlyType(poi.type).ifBlank { if (en) "place" else "场所" }
+        if (en) {
+            return when {
+                name.length > 18 -> "\"${name.take(16)}…\" looks like a full organization title rather than a landmark"
+                STORE_NAME.containsMatchIn(name) -> "\"$name\" is a retail branch without shared urban history"
+                BLOCK_ALWAYS.any { name.contains(it) } -> "\"$name\" is a daily shop, service, or transit node without public heritage"
+                policy.strictOnly -> "\"$name\" didn't match the strict historic-building list"
+                !policy.allowPublicInstitution && category in PUBLIC_INSTITUTION ->
+                    "\"$name\" is a $label site, and civic/school/hospital places are currently filtered out"
+                !policy.allowBusiness && BLOCK_BUSINESS.any { name.contains(it) } ->
+                    "\"$name\" is a commercial venue—enable \"Include shops & offices\" in Settings if you'd like to hear about it"
+                REAL_ESTATE.any { name.contains(it) } -> "\"$name\" is a modern commercial or residential complex"
+                else -> "\"$name\" ($label) doesn't have enough public history to tell"
+            }
+        }
         return when {
-            name.length > 18 -> "「${name.take(12)}…」是机构全称，不像一处具体的地标"
-            STORE_NAME.containsMatchIn(name) -> "「$name」是带门店后缀的商铺，没有公共历史可讲"
-            BLOCK_ALWAYS.any { name.contains(it) } -> "「$name」是日常消费、办事或交通节点，没有公共历史可讲"
-            policy.strictOnly -> "「$name」不在历史建筑名单里，严格模式已开启"
+            name.length > 18 -> "「${name.take(12)}…」更像是长串机构名，不太像一处具体地标"
+            STORE_NAME.containsMatchIn(name) -> "「$name」是临街门店，咱们先跳过日常消费场所"
+            BLOCK_ALWAYS.any { name.contains(it) } -> "「$name」属于日常消费、办事或交通路口，没有城市历史可讲"
+            policy.strictOnly -> "「$name」不在老建筑名单里（当前开启了严格模式）"
             !policy.allowPublicInstitution && category in PUBLIC_INSTITUTION ->
-                "「$name」属于$label，你关掉了「医院学校机关」"
+                "「$name」属于$label，你在设置里关掉了「医院、学校和机关也算」"
             !policy.allowBusiness && BLOCK_BUSINESS.any { name.contains(it) } ->
-                "「$name」是商业场所，可在设置里打开「公司门店也算」"
-            REAL_ESTATE.any { name.contains(it) } -> "「$name」是新建楼盘或商业体，没有年份可讲"
-            else -> "「$name」是$label，不属于可讲述的地点"
+                "「$name」是商业门店或公司，想听的话可以在设置里打开「普通商铺、写字楼也算」"
+            REAL_ESTATE.any { name.contains(it) } -> "「$name」是新建楼盘或商业体，还留不下多少岁月故事"
+            else -> "「$name」是$label，暂时没有可讲的城市记忆"
         }
     }
 }

@@ -25,11 +25,14 @@ data class ModelInfo(
 ) {
     /** 列表里的两行文案：展示名 + 上下文/能力摘要。 */
     val subtitle: String
-        get() = buildList {
-            contextWindow?.let { if (it > 0) add("上下文 ${formatK(it)}") }
-            effortDefault?.let { if (it.isNotBlank()) add("默认思考 $it") }
-            if (modalities.isNotBlank()) add(modalities)
-        }.joinToString(" · ")
+        get() {
+            val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+            return buildList {
+                contextWindow?.let { if (it > 0) add(if (en) "Context ${formatK(it)}" else "上下文 ${formatK(it)}") }
+                effortDefault?.let { if (it.isNotBlank()) add(if (en) "Reasoning $it" else "默认思考 $it") }
+                if (modalities.isNotBlank()) add(modalities)
+            }.joinToString(" · ")
+        }
 }
 
 private fun formatK(n: Int): String = when {
@@ -61,7 +64,8 @@ object ModelCatalog {
         settings: AppSettings,
         http: OkHttpClient = Http.quickClient
     ): List<ModelInfo> = withContext(Dispatchers.IO) {
-        if (settings.apiKey.isBlank()) throw IOException("先填 API Key")
+        val en = com.shanghai.memory.ui.theme.ThemeState.isEnglish
+        if (settings.apiKey.isBlank()) throw IOException(if (en) "Enter API Key first" else "请先填 API Key")
         val endpoint = settings.modelsEndpoint
 
         val request = Request.Builder()
@@ -76,9 +80,9 @@ object ModelCatalog {
             if (!response.isSuccessful) {
                 throw IOException(
                     when (response.code) {
-                        401, 403 -> "Key 无效或无权访问模型列表"
-                        404 -> "该端点没有 /models 接口，请手动填写模型名"
-                        else -> "HTTP ${response.code}：${text.take(120)}"
+                        401, 403 -> if (en) "Invalid Key or no access to /models" else "Key 无效或无权访问模型列表"
+                        404 -> if (en) "No /models endpoint here—enter model name manually" else "该端点没有 /models 接口，请手动填写模型名"
+                        else -> "HTTP ${response.code}: ${text.take(120)}"
                     }
                 )
             }
@@ -101,13 +105,13 @@ object ModelCatalog {
                     val visual = input.any {
                         (it as? JsonPrimitive)?.content?.contains("image", true) == true
                     }
-                    if (visual) append("支持图片输入")
+                    if (visual) append(if (en) "Vision" else "支持图片输入")
                 }
             }
             ModelInfo(id, name, context, effort, modalities)
         }.orEmpty()
 
-        if (list.isEmpty()) throw IOException("接口可用，但没有解析到任何模型")
+        if (list.isEmpty()) throw IOException(if (en) "Endpoint responded, but no models found" else "接口可用，但没有解析到任何模型")
         list.sortedBy { it.id }
     }
 }

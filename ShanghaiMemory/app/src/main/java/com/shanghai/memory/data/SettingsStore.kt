@@ -36,7 +36,8 @@ data class AppSettings(
     val fontId: String = "system_sans",
     val fontScale: Float = 1.0f,
     val importedFontPath: String = "",
-    val onboarded: Boolean = false
+    val onboarded: Boolean = false,
+    val language: String = "zh"
 ) {
     val provider: ProviderProfile get() = Providers.byId(providerId)
     val hasKey: Boolean get() = apiKey.isNotBlank() && model.isNotBlank()
@@ -75,6 +76,7 @@ class SettingsStore(private val context: Context) {
         val fontScale = stringPreferencesKey("ui_font_scale")
         val importedFontPath = stringPreferencesKey("ui_imported_font_path")
         val onboarded = booleanPreferencesKey("onboarded")
+        val language = stringPreferencesKey("ui_language")
     }
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { p ->
@@ -103,7 +105,8 @@ class SettingsStore(private val context: Context) {
             fontId = p[Key.fontId] ?: "system_sans",
             fontScale = p[Key.fontScale]?.toFloatOrNull() ?: 1.0f,
             importedFontPath = p[Key.importedFontPath].orEmpty(),
-            onboarded = p[Key.onboarded] ?: false
+            onboarded = p[Key.onboarded] ?: false,
+            language = p[Key.language] ?: "zh"
         )
     }
 
@@ -212,5 +215,9 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setOnboarded(value: Boolean) {
         context.settingsDataStore.edit { it[Key.onboarded] = value }
+    }
+
+    suspend fun setLanguage(value: String) {
+        context.settingsDataStore.edit { it[Key.language] = if (value == "en") "en" else "zh" }
     }
 }

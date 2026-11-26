@@ -49,6 +49,11 @@ open class ThemedActivity : AppCompatActivity() {
     protected open val autoInsetPadding: Boolean get() = true
 
     private var appliedRevision = -1
+    private var appliedLanguage = ThemeState.language
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase, ThemeState.language))
+    }
 
     /** 每个控件各自的原始 padding，重复收到 insets 回调时不会越加越大 */
     private val basePaddings = java.util.WeakHashMap<View, IntArray>()
@@ -88,6 +93,7 @@ open class ThemedActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         appliedRevision = ThemeState.revision
+        appliedLanguage = ThemeState.language
         setTheme(ThemeState.styleRes)
         super.onCreate(savedInstanceState)
         // 亮色底 → 系统栏用深色图标；深色底反之。不做这一步，亮色下状态栏图标会看不见
@@ -174,7 +180,7 @@ open class ThemedActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (appliedRevision != ThemeState.revision) {
+        if (appliedRevision != ThemeState.revision || appliedLanguage != ThemeState.language) {
             recreate()
         }
     }

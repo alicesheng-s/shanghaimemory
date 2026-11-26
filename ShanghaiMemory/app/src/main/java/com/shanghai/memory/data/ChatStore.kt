@@ -10,9 +10,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /** 两条长会话：地点讲述与行程策划。互不干扰，退出界面不丢。 */
-enum class ChatChannel(val title: String, val hint: String) {
-    STORY("地点讲述", "围绕刚才选中的地点继续追问"),
-    PLAN("行程策划", "说说你的偏好：体力、时间、想看的侧重")
+enum class ChatChannel(
+    private val titleZh: String,
+    private val titleEn: String,
+    private val hintZh: String,
+    private val hintEn: String
+) {
+    STORY("地点讲述", "Place Stories", "对刚才的地方还有好奇？接着问就行", "Curious about something else here? Ask a follow-up"),
+    PLAN("行程策划", "Route Planner", "聊聊你的节奏：想走多久、喜欢看老机器还是老故事", "Share your pace, time available, or what you'd like to see");
+
+    val title: String get() = if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) titleEn else titleZh
+    val hint: String get() = if (com.shanghai.memory.ui.theme.ThemeState.isEnglish) hintEn else hintZh
 }
 
 data class ChatMessage(
