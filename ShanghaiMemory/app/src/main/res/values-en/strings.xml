@@ -124,6 +124,25 @@
     <string name="route_custom_empty">Couldn\'t find matching spots. Try tweaking or broadening your keywords.</string>
     <string name="route_spots_count">Found %1$d spots. Tap + to pick your stops, then build your route below.</string>
     <string name="route_add">+</string>
+    <string name="route_add_preset">+</string>
+    <string name="route_add_preset_desc">Create custom preset trail</string>
+    <string name="route_save_preset">Save as Preset</string>
+    <string name="route_custom_preset_title">Create Custom Preset Trail</string>
+    <string name="route_custom_preset_name">Trail Name</string>
+    <string name="route_custom_preset_name_hint">e.g. My Suzhou Creek Walk</string>
+    <string name="route_custom_preset_desc">Description (optional)</string>
+    <string name="route_custom_preset_desc_hint">A short note about this trail</string>
+    <string name="route_custom_preset_spots">Stops (one per line or comma-separated)</string>
+    <string name="route_custom_preset_spots_hint">Yangshupu Power Plant Relic Park\n1933 Old Millfun\nM50 Creative Park</string>
+    <string name="route_custom_preset_need_input">Enter a trail name and at least 1 stop.</string>
+    <string name="route_custom_preset_saved">Saved to Curated Trails: %1$s</string>
+    <string name="route_custom_preset_default_sub">Custom trail · %1$d stops</string>
+    <string name="route_custom_preset_delete_title">Delete Custom Trail</string>
+    <string name="route_custom_preset_delete_msg">Remove \"%1$s\"? Built-in Power and Industry trails remain untouched.</string>
+    <string name="route_custom_preset_delete">Delete</string>
+    <string name="route_save_preset_dialog_title">Save to Curated Trails</string>
+    <string name="route_save_preset_selected_hint">Saves the %1$d stops you selected.</string>
+    <string name="route_save_preset_all_hint">No stops checked—saves all %1$d discovered spots.</string>
     <string name="route_use_spots_empty">Select at least one spot above</string>
     <string name="route_use_spots">Plan Route with %1$d Stops</string>
 

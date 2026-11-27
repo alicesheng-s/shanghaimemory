@@ -10,6 +10,8 @@ import com.shanghai.memory.data.model.Providers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class AppSettings(
     val providerId: String = Providers.DEEPSEEK.id,
@@ -84,6 +86,7 @@ class SettingsStore(private val context: Context) {
         val importedFontPath = stringPreferencesKey("ui_imported_font_path")
         val onboarded = booleanPreferencesKey("onboarded")
         val language = stringPreferencesKey("ui_language")
+        val customPresets = stringPreferencesKey("custom_presets_json")
     }
 
     val settings: Flow<AppSettings> = context.settingsDataStore.data.map { p ->
@@ -241,5 +244,90 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setLanguage(value: String) {
         context.settingsDataStore.edit { it[Key.language] = if (value == "en") "en" else "zh" }
+    }
+
+    suspend fun getCustomPresets(): List<SpotTheme> {
+        val raw = context.settingsDataStore.data.first()[Key.customPresets].orEmpty()
+        return decodePresets(raw)
+    }
+
+    suspend fun saveCustomPreset(theme: SpotTheme): List<SpotTheme> {
+        var result: List<SpotTheme> = emptyList()
+        context.settingsDataStore.edit { p ->
+            val current = decodePresets(p[Key.customPresets].orEmpty()).toMutableList()
+            val idx = current.indexOfFirst { it.key == theme.key }
+            if (idx >= 0) current[idx] = theme else current.add(0, theme)
+            p[Key.customPresets] = encodePresets(current)
+            result = current
+        }
+        return result
+    }
+
+    suspend fun deleteCustomPreset(key: String): List<SpotTheme> {
+        var result: List<SpotTheme> = emptyList()
+        context.settingsDataStore.edit { p ->
+            val updated = decodePresets(p[Key.customPresets].orEmpty()).filterNot { it.key == key }
+            p[Key.customPresets] = encodePresets(updated)
+            result = updated
+        }
+        return result
+    }
+
+    private fun decodePresets(raw: String): List<SpotTheme> {
+        if (raw.isBlank()) return emptyList()
+        return runCatching {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                val obj = arr.optJSONObject(i) ?: return@mapNotNull null
+                val key = obj.text("key").trim()
+                val title = obj.text("title").trim()
+                if (key.isEmpty() || title.isEmpty()) return@mapNotNull null
+                val spotsArr = obj.optJSONArray("spots") ?: JSONArray()
+                val spots = (0 until spotsArr.length()).mapNotNull { j ->
+                    val s = spotsArr.optJSONObject(j) ?: return@mapNotNull null
+                    val sName = s.text("name").trim()
+                    if (sName.isEmpty()) return@mapNotNull null
+                    CuratedSpot(
+                        name = sName,
+                        area = s.text("area").trim(),
+                        blurb = s.text("blurb").trim(),
+                        searchKey = s.text("searchKey").trim().ifBlank { sName }
+                    )
+                }
+                if (spots.isEmpty()) return@mapNotNull null
+                SpotTheme(
+                    key = key,
+                    title = title,
+                    subtitle = obj.text("subtitle").trim(),
+                    spots = spots
+                )
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun encodePresets(list: List<SpotTheme>): String {
+        val arr = JSONArray()
+        list.forEach { theme ->
+            val spotsArr = JSONArray()
+            theme.spots.forEach { s ->
+                spotsArr.put(
+                    JSONObject().apply {
+                        put("name", s.name)
+                        put("area", s.area)
+                        put("blurb", s.blurb)
+                        put("searchKey", s.searchKey)
+                    }
+                )
+            }
+            arr.put(
+                JSONObject().apply {
+                    put("key", theme.key)
+                    put("title", theme.title)
+                    put("subtitle", theme.subtitle)
+                    put("spots", spotsArr)
+                }
+            )
+        }
+        return arr.toString()
     }
 }

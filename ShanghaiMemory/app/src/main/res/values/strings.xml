@@ -124,6 +124,25 @@
     <string name="route_custom_empty">暂时没找到太贴切的地点，换个关键词或放宽一点条件试试看。</string>
     <string name="route_spots_count">共找到 %1$d 处地方，勾上你想去的，点下面按钮就可以排路线。</string>
     <string name="route_add">+</string>
+    <string name="route_add_preset">+</string>
+    <string name="route_add_preset_desc">新建自定义预设路线</string>
+    <string name="route_save_preset">添加到预设路线</string>
+    <string name="route_custom_preset_title">新建自定义预设路线</string>
+    <string name="route_custom_preset_name">路线名称</string>
+    <string name="route_custom_preset_name_hint">比如：我的苏州河漫步</string>
+    <string name="route_custom_preset_desc">路线简介（可选）</string>
+    <string name="route_custom_preset_desc_hint">一句话写清这条线想看什么</string>
+    <string name="route_custom_preset_spots">途径地点（每行一个地名，也可用逗号隔开）</string>
+    <string name="route_custom_preset_spots_hint">杨树浦电厂遗迹公园\n外滩第一盏电灯起源地\n1933老场坊</string>
+    <string name="route_custom_preset_need_input">请填写路线名称，并至少输入 1 个地点。</string>
+    <string name="route_custom_preset_saved">已保存到精选主题路线：%1$s</string>
+    <string name="route_custom_preset_default_sub">自定义路线 · 共 %1$d 处地点</string>
+    <string name="route_custom_preset_delete_title">删除自定义预设</string>
+    <string name="route_custom_preset_delete_msg">确定删除「%1$s」吗？内置的电力之旅和工业之旅不会受影响。</string>
+    <string name="route_custom_preset_delete">删除</string>
+    <string name="route_save_preset_dialog_title">添加到预设路线</string>
+    <string name="route_save_preset_selected_hint">将保存你已勾选的 %1$d 处地点。</string>
+    <string name="route_save_preset_all_hint">当前未单独勾选，将保存本次找出的全部 %1$d 处地点。</string>
     <string name="route_use_spots_empty">先在上面挑几处想逛的地方吧</string>
     <string name="route_use_spots">就逛这 %1$d 处，开始排路线</string>
 

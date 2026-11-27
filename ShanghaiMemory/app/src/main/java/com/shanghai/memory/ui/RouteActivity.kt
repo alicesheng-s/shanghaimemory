@@ -1,29 +1,41 @@
 package com.shanghai.memory.ui
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.location.AMapLocationClientOption
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.shanghai.memory.R
 import com.shanghai.memory.data.AmapService
+import com.shanghai.memory.data.CuratedSpot
 import com.shanghai.memory.data.CuratedSpots
 import com.shanghai.memory.data.LocationHolder
 import com.shanghai.memory.data.RouteRepository
 import com.shanghai.memory.data.SettingsStore
 import com.shanghai.memory.data.SpotCandidate
+import com.shanghai.memory.data.SpotTheme
 import com.shanghai.memory.databinding.ActivityRouteBinding
 import com.shanghai.memory.ui.theme.ThemeFx
+import com.shanghai.memory.ui.theme.ThemeState
 import com.shanghai.memory.ui.theme.ThemedActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * 游览路线的入口。
@@ -53,6 +65,7 @@ class RouteActivity : ThemedActivity() {
     private var userLng = 0.0
     private var workJob: Job? = null
     private var locationClient: AMapLocationClient? = null
+    private var customPresets: List<SpotTheme> = emptyList()
     private val subPageBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             showPage(parentOf(page))
@@ -91,7 +104,10 @@ class RouteActivity : ThemedActivity() {
 
         binding.btnFindSpots.setOnClickListener { findCustomSpots() }
         binding.btnUseSpots.setOnClickListener { useSelected() }
+        binding.btnAddPreset.setOnClickListener { showCreatePresetDialog() }
+        binding.btnSavePreset.setOnClickListener { showSaveSearchAsPresetDialog() }
 
+        loadCustomPresets()
         if (savedInstanceState != null) {
             restoreUiState(savedInstanceState)
         } else {
@@ -110,17 +126,27 @@ class RouteActivity : ThemedActivity() {
         selected.addAll(saved.getStringArrayList(KEY_SELECTED).orEmpty())
 
         val targetPage = saved.getInt(KEY_PAGE, PAGE_MENU)
-        if (targetPage == PAGE_SPOTS) {
-            val theme = CuratedSpots.byKey(themeKey)
-            if (spotsFrom == PAGE_PRESET && theme != null) {
-                themeTitle = theme.title
-                spots = theme.spots.map { SpotCandidate.of(it) }
-                showPage(PAGE_SPOTS, animate = false)
-                binding.txtSpotsHint.text = getString(R.string.route_spots_count, spots.size)
-                renderSpots()
-                ensureLocation { locate() }
+        if (targetPage == PAGE_SPOTS && spotsFrom == PAGE_PRESET) {
+            val builtIn = CuratedSpots.byKey(themeKey)
+            if (builtIn != null) {
+                openRestoredTheme(builtIn)
                 return
             }
+            lifecycleScope.launch {
+                val allCustom = store.getCustomPresets()
+                customPresets = allCustom
+                renderCustomPresets()
+                val customTheme = allCustom.firstOrNull { it.key == themeKey }
+                if (customTheme != null) {
+                    openRestoredTheme(customTheme)
+                } else {
+                    updateUseButton()
+                    showPage(PAGE_PRESET, animate = false)
+                }
+            }
+            return
+        }
+        if (targetPage == PAGE_SPOTS) {
             // 自定义检索结果未持久化，重建后回到自定义输入页避免空列表
             showPage(PAGE_CUSTOM, animate = false)
             updateUseButton()
@@ -128,6 +154,15 @@ class RouteActivity : ThemedActivity() {
         }
         updateUseButton()
         showPage(targetPage, animate = false)
+    }
+
+    private fun openRestoredTheme(theme: SpotTheme) {
+        themeTitle = theme.title
+        spots = theme.spots.map { SpotCandidate.of(it) }
+        showPage(PAGE_SPOTS, animate = false)
+        binding.txtSpotsHint.text = getString(R.string.route_spots_count, spots.size)
+        renderSpots()
+        ensureLocation { locate() }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -163,6 +198,9 @@ class RouteActivity : ThemedActivity() {
         }
         page = target
         subPageBackCallback.isEnabled = target != PAGE_MENU
+        binding.btnAddPreset.visibility = if (target == PAGE_PRESET) View.VISIBLE else View.GONE
+        binding.btnSavePreset.visibility =
+            if (target == PAGE_SPOTS && spotsFrom == PAGE_CUSTOM) View.VISIBLE else View.GONE
         if (target != PAGE_CUSTOM) hideKeyboard()
         binding.txtRouteTitle.text = when (target) {
             PAGE_PRESET -> getString(R.string.route_preset_title)
@@ -186,7 +224,7 @@ class RouteActivity : ThemedActivity() {
 
     // ---- 预设主题 ----
 
-    private fun openTheme(theme: com.shanghai.memory.data.SpotTheme) {
+    private fun openTheme(theme: SpotTheme) {
         themeKey = theme.key
         themeTitle = theme.title
         spotsFrom = PAGE_PRESET
@@ -196,6 +234,275 @@ class RouteActivity : ThemedActivity() {
         binding.txtSpotsHint.text = getString(R.string.route_spots_count, spots.size)
         renderSpots()
         ensureLocation { locate() }
+    }
+
+    private fun loadCustomPresets() {
+        lifecycleScope.launch {
+            customPresets = store.getCustomPresets()
+            renderCustomPresets()
+        }
+    }
+
+    private fun renderCustomPresets() {
+        val box = binding.customPresetsContainer
+        box.removeAllViews()
+        val colors = ThemeState.colors
+        val dp = resources.displayMetrics.density
+        customPresets.forEach { theme ->
+            val card = LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setBackgroundResource(R.drawable.bg_card)
+                val pad = (18 * dp).roundToInt()
+                setPadding(pad, pad, pad, pad)
+                isClickable = true
+                isFocusable = true
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = (12 * dp).roundToInt() }
+                setOnClickListener { openTheme(theme) }
+            }
+
+            val topRow = LinearLayout(this).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+            }
+            val titleView = TextView(this).apply {
+                text = theme.title
+                setTextColor(colors.text)
+                textSize = 15.5f
+                layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+            }
+            val delView = TextView(this).apply {
+                text = getString(R.string.route_custom_preset_delete)
+                setTextColor(colors.textMuted)
+                textSize = 12.5f
+                val hPad = (8 * dp).roundToInt()
+                val vPad = (4 * dp).roundToInt()
+                setPadding(hPad, vPad, 0, vPad)
+                setOnClickListener { confirmDeletePreset(theme) }
+            }
+            topRow.addView(titleView)
+            topRow.addView(delView)
+
+            val descView = TextView(this).apply {
+                text = theme.subtitle.ifBlank {
+                    getString(R.string.route_custom_preset_default_sub, theme.spots.size)
+                }
+                setTextColor(colors.textMuted)
+                textSize = 13f
+                setLineSpacing(0f, 1.45f)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = (6 * dp).roundToInt() }
+            }
+
+            card.addView(topRow)
+            card.addView(descView)
+            box.addView(card)
+        }
+        applyAppearance(box)
+    }
+
+    private fun confirmDeletePreset(theme: SpotTheme) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.route_custom_preset_delete_title)
+            .setMessage(getString(R.string.route_custom_preset_delete_msg, theme.title))
+            .setPositiveButton(R.string.route_custom_preset_delete) { _, _ ->
+                lifecycleScope.launch {
+                    customPresets = store.deleteCustomPreset(theme.key)
+                    renderCustomPresets()
+                }
+            }
+            .setNegativeButton(R.string.common_cancel, null)
+            .show()
+    }
+
+    private fun showCreatePresetDialog() {
+        val colors = ThemeState.colors
+        val dp = resources.displayMetrics.density
+        val pad = (16 * dp).roundToInt()
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((20 * dp).roundToInt(), (8 * dp).roundToInt(), (20 * dp).roundToInt(), 0)
+        }
+
+        fun makeLabel(resId: Int, topDp: Int = 0) = TextView(this).apply {
+            setText(resId)
+            setTextColor(colors.textMuted)
+            textSize = 12.5f
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (topDp * dp).roundToInt() }
+        }
+
+        fun makeInput(hintRes: Int, lines: Int = 1) = EditText(this).apply {
+            setHint(hintRes)
+            setTextColor(colors.text)
+            setHintTextColor(colors.textMuted)
+            setBackgroundResource(R.drawable.bg_card)
+            setPadding(pad, (12 * dp).roundToInt(), pad, (12 * dp).roundToInt())
+            textSize = 14.5f
+            if (lines > 1) {
+                minLines = lines
+                maxLines = 6
+                gravity = Gravity.TOP or Gravity.START
+            } else {
+                isSingleLine = true
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (6 * dp).roundToInt() }
+        }
+
+        val etName = makeInput(R.string.route_custom_preset_name_hint)
+        val etDesc = makeInput(R.string.route_custom_preset_desc_hint)
+        val etSpots = makeInput(R.string.route_custom_preset_spots_hint, lines = 4)
+
+        box.addView(makeLabel(R.string.route_custom_preset_name))
+        box.addView(etName)
+        box.addView(makeLabel(R.string.route_custom_preset_desc, topDp = 12))
+        box.addView(etDesc)
+        box.addView(makeLabel(R.string.route_custom_preset_spots, topDp = 12))
+        box.addView(etSpots)
+        applyAppearance(box)
+
+        val scroller = ScrollView(this).apply { addView(box) }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.route_custom_preset_title)
+            .setView(scroller)
+            .setPositiveButton(R.string.common_confirm, null)
+            .setNegativeButton(R.string.common_cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val title = etName.text.toString().trim()
+                val desc = etDesc.text.toString().trim()
+                val rawNames = etSpots.text.toString()
+                    .split('\n', ',', '，', '、', ';', '；')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .distinct()
+                if (title.isEmpty() || rawNames.isEmpty()) {
+                    Toast.makeText(this, R.string.route_custom_preset_need_input, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val defaultArea = if (ThemeState.isEnglish) "Shanghai" else "上海"
+                val defaultBlurb = if (ThemeState.isEnglish) "Custom preset stop" else "自定义预设点位"
+                val curated = rawNames.map { name ->
+                    CuratedSpot(name = name, area = defaultArea, blurb = defaultBlurb, searchKey = name)
+                }
+                val theme = SpotTheme(
+                    key = "user_${System.currentTimeMillis()}",
+                    title = title,
+                    subtitle = desc.ifBlank { getString(R.string.route_custom_preset_default_sub, curated.size) },
+                    spots = curated
+                )
+                dialog.dismiss()
+                lifecycleScope.launch {
+                    customPresets = store.saveCustomPreset(theme)
+                    renderCustomPresets()
+                    Toast.makeText(
+                        this@RouteActivity,
+                        getString(R.string.route_custom_preset_saved, title),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun showSaveSearchAsPresetDialog() {
+        val chosen = if (selected.isNotEmpty()) {
+            spots.filter { selected.contains(it.name) }
+        } else {
+            spots
+        }
+        if (chosen.isEmpty()) return
+
+        val colors = ThemeState.colors
+        val dp = resources.displayMetrics.density
+        val pad = (16 * dp).roundToInt()
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((20 * dp).roundToInt(), (8 * dp).roundToInt(), (20 * dp).roundToInt(), 0)
+        }
+        val hintView = TextView(this).apply {
+            text = if (selected.isNotEmpty()) {
+                getString(R.string.route_save_preset_selected_hint, chosen.size)
+            } else {
+                getString(R.string.route_save_preset_all_hint, chosen.size)
+            }
+            setTextColor(colors.textMuted)
+            textSize = 13f
+        }
+        val etName = EditText(this).apply {
+            setHint(R.string.route_custom_preset_name_hint)
+            setText(themeTitle)
+            setTextColor(colors.text)
+            setHintTextColor(colors.textMuted)
+            setBackgroundResource(R.drawable.bg_card)
+            setPadding(pad, (12 * dp).roundToInt(), pad, (12 * dp).roundToInt())
+            textSize = 15f
+            isSingleLine = true
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = (10 * dp).roundToInt() }
+        }
+        box.addView(hintView)
+        box.addView(etName)
+        applyAppearance(box)
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.route_save_preset_dialog_title)
+            .setView(box)
+            .setPositiveButton(R.string.common_confirm, null)
+            .setNegativeButton(R.string.common_cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val title = etName.text.toString().trim()
+                if (title.isEmpty()) {
+                    Toast.makeText(this, R.string.route_custom_preset_name_hint, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val curated = chosen.map { s ->
+                    CuratedSpot(
+                        name = s.name,
+                        area = s.area,
+                        blurb = s.blurb,
+                        searchKey = s.searchKey.ifBlank { s.name }
+                    )
+                }
+                val theme = SpotTheme(
+                    key = "user_${System.currentTimeMillis()}",
+                    title = title,
+                    subtitle = getString(R.string.route_custom_preset_default_sub, curated.size),
+                    spots = curated
+                )
+                dialog.dismiss()
+                lifecycleScope.launch {
+                    customPresets = store.saveCustomPreset(theme)
+                    renderCustomPresets()
+                    Toast.makeText(
+                        this@RouteActivity,
+                        getString(R.string.route_custom_preset_saved, title),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        dialog.show()
     }
 
     // ---- 自定义 ----
