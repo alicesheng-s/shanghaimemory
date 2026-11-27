@@ -164,8 +164,16 @@ class RouteRepository(
         if (!settings.hasKey) {
             throw IllegalStateException(if (en) "Please add an API Key in Settings first" else "请先到设置里填好 API Key 哦")
         }
+        val searchContext = if (settings.canSearch) {
+            val topic = TopicRouting.detect(keywords, preference)
+            val q = if (preference == "活动") "上海 $keywords 近期 活动 展览" else "上海 $keywords 推荐 地点"
+            val hits = search.search(settings, q.take(64), count = 5, topic = topic)
+            hits.take(5).mapIndexed { index, hit -> hit.toPromptBlock(index) }.joinToString("\n")
+        } else {
+            ""
+        }
         val system = PromptTemplates.spotSystem()
-        val prompt = PromptTemplates.spotUserPrompt(keywords, preference, want)
+        val prompt = PromptTemplates.spotUserPrompt(keywords, preference, want, searchContext)
 
         val first = ask(settings, system, prompt, jsonMode = true)?.let { parseSpots(it) }
         if (!first.isNullOrEmpty()) return@withContext first

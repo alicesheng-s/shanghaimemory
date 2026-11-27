@@ -33,10 +33,10 @@ object PromptTemplates {
         "You are a Shanghai walking-route curator. Output strictly valid JSON only, with no extra commentary."
 
     private const val SYSTEM_SPOT_ZH =
-        "你是熟悉上海城市史与工业遗产的向导，只输出符合要求的 JSON，不输出任何解释性文字。"
+        "你是熟悉上海全城各类街区、文化场馆、公园绿地、咖啡书店与城市风貌的本地向导，必须严格紧扣用户输入的关键词推荐真实地点；只输出符合要求的 JSON，不输出任何解释性文字。"
 
     private const val SYSTEM_SPOT_EN =
-        "You are a guide to Shanghai's urban and industrial heritage. Output strictly valid JSON only, with no extra commentary."
+        "You are a local Shanghai city guide knowledgeable across neighborhoods, parks, museums, cafes, bookstores, and urban life. Follow the user's keywords strictly and output valid JSON only, with no extra commentary."
 
     private const val SECTION_RULE_ZH = """输出格式（严格遵守）：
 段标题各占一行、用中文方括号包住，正文另起一行；全部使用纯文本，禁止 **、##、---、表格等 Markdown 记号。
@@ -362,7 +362,7 @@ $stopRule
             return head + "\n\n" +
                 "Before I arrange the order and timing, tell me a little about:\n" +
                 "1. How long would you like to walk today?\n" +
-                "2. What draws you most—old industrial machinery, architecture, or human stories?\n" +
+                "2. What draws you most—spatial aesthetics, local history, or recent happenings?\n" +
                 "3. Who's walking with you (solo, friends, elders, or kids)?\n\n" +
                 "Just reply in a sentence or two and I'll build your route."
         }
@@ -374,7 +374,7 @@ $stopRule
         return head + "\n\n" +
             "动手排顺序之前，先告诉我三件小事：\n" +
             "1. 今天大概想逛几个小时，能接受多少步行量？\n" +
-            "2. 更想看老机器老厂房，还是想听人情往事？\n" +
+            "2. 更想看建筑细节与氛围，还是想听人情往事与近期活动？\n" +
             "3. 是自己一个人逛，还是带朋友、长辈或小朋友？\n\n" +
             "随便回两三句话就行，我马上按你的节奏把路线理出来。"
     }
@@ -386,36 +386,45 @@ $stopRule
 
     fun spotSystem(): String = if (en) SYSTEM_SPOT_EN else SYSTEM_SPOT_ZH
 
-    fun spotUserPrompt(keywords: String, preference: String, want: Int = 10): String {
+    fun spotUserPrompt(
+        keywords: String,
+        preference: String,
+        want: Int = 10,
+        searchContext: String = ""
+    ): String {
         if (en) {
             val focus = when (preference) {
-                "活动" -> "Prioritize places currently open with active exhibitions, markets, or events, and mention what's happening in blurb."
-                "历史建筑" -> "Prioritize historic buildings, old mills, and warehouses where the original character remains visible."
-                else -> "Balance historic architecture with lively present-day spaces."
+                "活动" -> "Prioritize places currently open with active exhibitions, pop-ups, markets, or events matching the keywords, and mention what's happening in blurb."
+                "历史建筑" -> "Prioritize historic buildings, heritage venues, or classic streets matching the keywords where original architectural character remains visible."
+                else -> "Balance classic character and lively present-day spots, all closely matching the keywords."
             }
-            return """The visitor wants to explore places in Shanghai matching: $keywords
+            val ref = if (searchContext.isBlank()) "" else "\n[Public Search References]\n$searchContext\n"
+            return """The visitor wants to explore places in Shanghai matching these keywords: $keywords
 Keywords may include boolean operators (and, or, not); interpret them logically rather than as literal place names.
 $focus
+$ref
 Return $want concrete places in Shanghai:
-1. Every place must genuinely exist in Shanghai and be findable on maps.
-2. Make sure they are distinct places (not two buildings inside the same park).
-3. Write blurb in English (under 25 words) explaining what it used to be and what it is today.
+1. Follow the keywords strictly: do NOT force power plants, factories, or industrial heritage unless the keywords specifically ask for them (e.g. cafes -> real cafes, anime -> anime spots, parks -> parks).
+2. Every place must genuinely exist in Shanghai and be findable on maps; make sure they are distinct places (not two rooms inside one venue).
+3. Write blurb in English (under 25 words) explaining what makes it fit the keywords and what's special about it today.
 4. Put the official Chinese landmark name in "search_key" so the local map can pin it accurately.
 5. Output ONLY this JSON starting with { and ending with }, no code fences or extra text:
 {"spots":[{"name":"English Name","search_key":"中文地标名","area":"District + Street","blurb":"One-line intro"}]}"""
         }
         val focus = when (preference) {
-            "活动" -> "优先给近一两年仍在开放、正在办展或有活动的场所，并在 blurb 里写清它现在在做什么。"
-            "历史建筑" -> "优先给本身是有年头、能看出建筑年代与原来用途的老房子、老厂、老仓库。"
-            else -> "老建筑与当下正在发生的事各占一半。"
+            "活动" -> "优先给贴合关键词且近期仍在开放、正在办展或有活动的好去处，并在 blurb 里写清它现在有什么看点。"
+            "历史建筑" -> "优先给贴合关键词、本身有年代感或保留原有建筑风貌的老房子、历史街区或老场馆。"
+            else -> "紧扣关键词，在有韵味的经典去处与当下热闹鲜活的新空间之间各占一半。"
         }
-        return """用户想在上海找这样一类地方：$keywords
+        val ref = if (searchContext.isBlank()) "" else "\n【联网检索参考】（可优先从中筛选真实且符合关键词的地点）\n$searchContext\n"
+        return """用户想在上海找符合这个主题或关键词的地方：$keywords
 关键词可能用了 and、or、not 这类逻辑写法，按它们的布尔含义理解，不要当成地名的一部分。
 $focus
+$ref
 请给出 $want 个具体地点，要求：
-1. 必须真实存在于上海，名称要能在地图应用里直接搜到；不确定是否存在的地点一律不要写。
-2. 彼此不要是同一个地方，也不要只是同一个园区里的两栋楼。
-3. blurb 一句话说清它原来是什么、现在是什么，不超过 45 字。
+1. 必须严格紧扣关键词【$keywords】选点！除非关键词明确提到电力或工业，否则绝不要硬往电厂、工厂、工业遗址上靠（找咖啡就给特色咖啡街区/门店，找二次元就给二次元商业体/地标，找公园就给公园）。
+2. 必须真实存在于上海，名称要能在高德地图里直接搜到；不确定是否存在的地点不要写，也不要把同一个园区里的两栋楼凑成两个点。
+3. blurb 一句话说清这个地方的特色及为何贴合关键词，不超过 45 字。
 4. 只输出下面这个 JSON，第一个字符是 {，最后一个字符是 }，不要代码块、不要解释、不要换行缩进：
 {"spots":[{"name":"地点名","area":"区+路名或门牌","blurb":"一句话介绍"}]}"""
     }
