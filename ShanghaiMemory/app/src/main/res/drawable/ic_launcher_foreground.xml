@@ -1,19 +1,140 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:pathData="M54,54m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0"
-        android:strokeColor="#C8A66B"
-        android:strokeWidth="2.5"
-        android:fillColor="#00000000" />
-    <path
-        android:pathData="M54,54m-13,0a13,13 0,1 1,26 0a13,13 0,1 1,-26 0"
-        android:strokeColor="#6B5A38"
-        android:strokeWidth="1.5"
-        android:fillColor="#00000000" />
-    <path
-        android:pathData="M54,54m-6,0a6,6 0,1 1,12 0a6,6 0,1 1,-12 0"
-        android:fillColor="#E8C88A" />
+
+    <!-- 缩放至 0.88 留出安全呼吸边距，适配圆形与超椭圆桌面裁切 -->
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:scaleX="0.88"
+        android:scaleY="0.88">
+
+        <!-- 外层坐标针轮廓：底部柔影 -->
+        <path
+            android:pathData="M54,23 C38.5,23 26,35.2 26,50.5 C26,64.8 40.2,75.4 54,87.5 C67.8,75.4 82,64.8 82,50.5 C82,35.2 69.5,23 54,23 Z"
+            android:fillColor="#44000000" />
+
+        <!-- 主坐标针金环描边（上亮下深金属渐变） -->
+        <path
+            android:pathData="M54,21.5 C38.5,21.5 26,33.8 26,49 C26,63.3 40.2,73.9 54,86 C67.8,73.9 82,63.3 82,49 C82,33.8 69.5,21.5 54,21.5 Z"
+            android:fillColor="#141B26"
+            android:strokeWidth="2.7">
+            <aapt:attr name="android:strokeColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="34"
+                    android:startY="22"
+                    android:endX="74"
+                    android:endY="85"
+                    android:startColor="#F5DBA3"
+                    android:centerColor="#C8A66B"
+                    android:endColor="#8E6C36" />
+            </aapt:attr>
+        </path>
+
+        <!-- 针环内细装饰圈 -->
+        <path
+            android:pathData="M54,49m-22.5,0a22.5,22.5 0,1 1,45 0a22.5,22.5 0,1 1,-45 0"
+            android:strokeColor="#3A475C"
+            android:strokeWidth="0.95"
+            android:fillColor="#00000000" />
+
+        <!-- 顶部指南针正北指针刻度 -->
+        <path
+            android:pathData="M54,24.5 L56.2,28.5 L51.8,28.5 Z"
+            android:fillColor="#F5DBA3" />
+        <path
+            android:pathData="M31.5,49 L34.5,49 M73.5,49 L76.5,49"
+            android:strokeColor="#8E7550"
+            android:strokeWidth="1.2"
+            android:strokeLineCap="round" />
+
+        <!-- 1882 第一盏电灯/电弧星芒（柔和径向光晕 + 四角星芒） -->
+        <path android:pathData="M42.5,36.5m-6.5,0a6.5,6.5 0,1 1,13 0a6.5,6.5 0,1 1,-13 0">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="radial"
+                    android:centerX="42.5"
+                    android:centerY="36.5"
+                    android:gradientRadius="6.5"
+                    android:startColor="#55FFE6AD"
+                    android:endColor="#00FFE6AD" />
+            </aapt:attr>
+        </path>
+        <path
+            android:pathData="M42.5,32.7 L43.4,35.6 L46.3,36.5 L43.4,37.4 L42.5,40.3 L41.6,37.4 L38.7,36.5 L41.6,35.6 Z"
+            android:fillColor="#FFF5D6" />
+
+        <!-- 主厂房锯齿屋顶剪影（国棉/老厂房记忆） -->
+        <path
+            android:pathData="M36.5,59 L36.5,48.5 L43,53 L43,48.5 L49.5,53 L49.5,48.5 L56,53 L56,59 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46"
+                    android:startY="48"
+                    android:endX="46"
+                    android:endY="59"
+                    android:startColor="#E8C88A"
+                    android:endColor="#B58E4E" />
+            </aapt:attr>
+        </path>
+
+        <!-- 锯齿厂房拱窗 -->
+        <path
+            android:pathData="M39.5,54.5h2.2v3.5h-2.2z M45.5,54.5h2.2v3.5h-2.2z M51.5,54.5h2.2v3.5h-2.2z"
+            android:fillColor="#1A2230" />
+
+        <!-- 高耸电厂大烟囱（致敬杨树浦/南市发电厂 165m 烟囱温度计） -->
+        <path
+            android:pathData="M59,59 L60.3,34.5 L64.7,34.5 L66,59 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="62.5"
+                    android:startY="34"
+                    android:endX="62.5"
+                    android:endY="59"
+                    android:startColor="#F7DFA8"
+                    android:endColor="#B99152" />
+            </aapt:attr>
+        </path>
+
+        <!-- 烟囱上的暖陶红温度计发光竖条 + 顶冠 -->
+        <path
+            android:pathData="M59.8,34.5h5.4v1.8h-5.4z"
+            android:fillColor="#FFF0C7" />
+        <path
+            android:pathData="M62.5,38.5 L62.5,54.5"
+            android:strokeColor="#E06A4F"
+            android:strokeWidth="1.6"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M62.5,39.5 L62.5,45.5"
+            android:strokeColor="#FFE4A8"
+            android:strokeWidth="1.2"
+            android:strokeLineCap="round" />
+
+        <!-- 黄浦江波纹（承载两代工业记忆的江岸） -->
+        <path
+            android:pathData="M35.5,63.2 Q41.5,60.2 47.5,63.2 T59.5,63.2 T72.5,63.2"
+            android:strokeColor="#6EB8AC"
+            android:strokeWidth="2.1"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000" />
+        <path
+            android:pathData="M40.5,67.6 Q47,65.2 53.5,67.6 T67.5,67.6"
+            android:strokeColor="#C8A66B"
+            android:strokeWidth="1.5"
+            android:strokeLineCap="round"
+            android:fillColor="#00000000" />
+
+        <!-- 针尖汇聚小光点 -->
+        <path
+            android:pathData="M54,77.5m-2,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"
+            android:fillColor="#F5DBA3" />
+    </group>
 </vector>

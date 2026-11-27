@@ -95,19 +95,25 @@ object LandmarkGate {
     fun isWorthTelling(poi: PoiInfo, policy: GatePolicy = GatePolicy()): Boolean {
         val name = poi.name.trim()
         if (name.isEmpty()) return false
-        // 真地名很少超过十八字；长串多半是「XX街道XX路88弄XX服务站」这类机构全称
-        if (name.length > 18) return false
         if (STORE_NAME.containsMatchIn(name)) return false
 
+        // 开启「关联更大范围地标」时，先算出可能的母体名（例如「上海电力大学浮雕墙小草坪」→「上海电力大学」）
+        val broad = if (policy.expandParentContext) PlaceContext.broaden(name) else null
+
+        // 真地名很少超过十八字；但若提取出了十八字以内的母体名则放宽到母体判断
+        if (name.length > 18 && (broad == null || broad.length > 18)) return false
+
         // 1. 用户自己写下的关键词，优先级最高：他比任何规则都清楚自己想看什么
-        if (policy.keywords.any { name.contains(it) }) return true
+        if (policy.keywords.any { name.contains(it) || (broad != null && broad.contains(it)) }) return true
 
         // 2. 日常消费与办事机构，怎么设置都拒。
         //    必须排在严格模式之前，否则「静安寺地铁站」会被 STRICT_HINTS 的「寺」放行
         if (BLOCK_ALWAYS.any { name.contains(it) }) return false
 
         // 3. 严格模式：只认老建筑，宁可漏
-        if (policy.strictOnly) return STRICT_HINTS.any { name.contains(it) }
+        if (policy.strictOnly) {
+            return STRICT_HINTS.any { name.contains(it) || (broad != null && broad.contains(it)) }
+        }
 
         val category = categoryOf(poi.type)
 
@@ -120,7 +126,7 @@ object LandmarkGate {
         // 新建楼盘的配套商业街常叫「XX公园·XX街」「XX华庭」，名字里带「公园」「大楼」不算数
         if (REAL_ESTATE.any { name.contains(it) }) return false
 
-        if (NAME_HINTS.any { name.contains(it) }) return true
+        if (NAME_HINTS.any { name.contains(it) || (broad != null && broad.contains(it)) }) return true
 
         if (category in CATEGORY_BLOCK) {
             return policy.allowBusiness && category in BUSINESS_CATEGORY

@@ -20,6 +20,9 @@ object TopicRouting {
         SCENERY("景色", listOf("xiaohongshu.com", "mafengwo.cn", "weibo.com")),
         NICHE("冷门", listOf("bilibili.com", "youku.com", "tieba.baidu.com", "nga.cn")),
 
+        /** 官方公众号与主流媒体：用于抓取场地开放公告、展览讲座与官方活动 */
+        OFFICIAL("官方与公众号", listOf("mp.weixin.qq.com", "thepaper.cn", "shanghai.gov.cn")),
+
         /** 历史建筑与城市记忆不加站点限制：公众号、地方志、新闻站到处都是，限死反而搜不到 */
         GENERAL("通用", emptyList())
     }
@@ -60,7 +63,8 @@ object TopicRouting {
      */
     fun decorate(query: String, topic: Topic): String {
         if (topic.sites.isEmpty()) return query.take(MAX_QUERY)
-        val base = query.trim().take(MAX_QUERY - 32)
+        val reserve = if (topic == Topic.OFFICIAL) OFFICIAL_SITE_RESERVE else SITE_RESERVE
+        val base = query.trim().take(MAX_QUERY - reserve)
         val sites = topic.sites.toMutableList()
         while (sites.isNotEmpty()) {
             val clause = sites.joinToString(" OR ") { "site:$it" }
@@ -69,6 +73,21 @@ object TopicRouting {
             sites.removeAt(sites.size - 1)
         }
         return base
+    }
+
+    /** 地点历史与建筑由来主查询 */
+    fun storyHistoryQuery(subject: String, district: String): String {
+        val area = district.ifBlank { "上海" }
+        return "${subject.trim()} $area 历史 由来 建筑".take(64)
+    }
+
+    /** 尝试捕获地点官方公众号、高校/场馆官网及官媒发布的近期活动与开放公告 */
+    fun officialActivityQuery(subject: String, monthsBack: Long = 8): String {
+        val since = java.time.LocalDate.now().minusMonths(monthsBack).toString().take(7)
+        val tail = " after:$since"
+        val head = "${subject.trim()} 公众号 官方 近期 活动 展览 开放"
+        val room = (MAX_QUERY - OFFICIAL_SITE_RESERVE - tail.length).coerceAtLeast(1)
+        return (head.take(room) + tail).trim()
     }
 
     /**
@@ -93,4 +112,5 @@ object TopicRouting {
 
     /** decorate 拼 (site:a OR site:b) 时预留的字符数，与 decorate 里的裁剪口径保持一致 */
     private const val SITE_RESERVE = 32
+    private const val OFFICIAL_SITE_RESERVE = 46
 }

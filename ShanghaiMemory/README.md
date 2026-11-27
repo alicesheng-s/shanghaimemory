@@ -2,7 +2,7 @@
 
 一个把「城市阅读」变成「边走边听故事」的 Android 应用。在地图上停下，附近的工业遗产、老厂房、水厂、仓库就会开口讲自己的来历——有据可查的部分讲证据，查不到的部分明确标「此事待考」。
 
-面向工业文化创新发展大赛 · 2026 人工智能未来设计赛（OPC 创新创业方向，AI+软件赛道）。当前版本 0.9.5。
+面向工业文化创新发展大赛 · 2026 人工智能未来设计赛（OPC 创新创业方向，AI+软件赛道）。当前版本 1.0.0。
 
 ## 环境要求
 
@@ -455,3 +455,14 @@ Android 11 起应用默认只能看见自己声明过的包。`targetSdk` 已经
 - **高德定位/地理编码与限流策略修正**：修复 0.9.0 / 0.9.5 真机实测中突发并发触及高德个人 Key QPS 上限导致的「暂未定位到」（以及「北苏州路2号」错配到邻近点位的问题）。`RouteRepository` 加入 380 ms 间隔全局节流器与进程内坐标缓存，`AmapService` 对限流返回码自动退避 750 ms 重试一次；`resolvePoint` 统一清理分隔符与英文区域串，门牌地址优先走 `上海市<区+门牌>` 正向地理编码，地标名优先走关键词检索并以区名+门牌兜底。
 - **实时导航倾斜角与搜索距离修正**：`MapActivity` 在开启导航/回正动画期间保护相机 3D 倾斜过渡不被高频传感器回调打断，重建恢复导航时避免 `0°` 平面锁死；关键词搜索选中远方地标时按当前位置实时计算距你距离并自适应米/公里显示，不再误报「就在脚下」。
 - **协程取消与状态保持加固**：`RouteActivity` 补全 `onSaveInstanceState` 页面/主题/已选站点恢复与 `CancellationException` 透传；`SettingsActivity` 在模型拉取与连通性测试中透传 `CancellationException`；`ChatActivity` 返回已有会话或切换 Tab 时同步更新已朗读消息 ID，避免重复播报旧内容。
+
+## 0.9.6 版
+
+- **地图右侧快捷栏新增「实时导航」按钮与显隐开关**：`activity_map.xml` 在右侧快捷栏加入 `btn_nav`（导航开启时主色高亮），同步将 `btn_recenter` 移至外层 `right_controls`，即使在「设置 → 外观与阅读」中关闭右侧快捷栏（默认开启），侧栏开启实时导航并拖动地图后「回到我的位置」依然可用。
+- **自定义高德地图 API Key**：在设置一级菜单新增「地图 API 服务」子页，支持填写并本地保存用户自己的高德 Android API Key，经 `AmapKeyManager` 在 `App.onCreate` 与保存时同步注入地图、检索与定位三个 SDK 模块，留空自动回退内置默认密钥。
+- **扩大子地点讲述范围与官方公众号/官媒双路检索**：新增 `PlaceContext.broaden` 提取母体地标（如「上海电力大学浮雕墙小草坪」自动关联「上海电力大学」），并在「设置 → 哪些地方值得讲」新增开关（默认开启，关闭后严格只讲原地点名）；`StoryRepository` 联网时并行检索历史由来与官方公众号/主流官媒（`mp.weixin.qq.com` / `thepaper.cn` / `shanghai.gov.cn`）近况，丰富「近期活动」输出。
+- **Android 16 预测性返回适配**：将 `MapActivity`、`RouteActivity`、`SettingsActivity` 已废弃的 `onBackPressed()` 迁移至 `OnBackPressedDispatcher`（`OnBackPressedCallback`），修复系统返回手势/返回键在子页或侧栏展开时直接穿透退出的问题。
+
+## 1.0.0 正式测试版
+
+- **全新墨金自适应应用图标（Adaptive Icon）**：重绘 `ic_launcher_background`、`ic_launcher_foreground` 与 Android 13+ 单色主题层 `ic_launcher_monochrome`（`mipmap-anydpi-v33`）。在深墨夜色与城市经纬光环之上，将「坐标指针」与上海电力工业代表符号——**锯齿老厂房、1882 第一盏电弧灯星芒、165 米南市电厂烟囱温度计、黄浦江波纹**融为一体，金属墨金渐变与暖陶红点缀使图标在不同桌面裁切形状下保持高辨识度。

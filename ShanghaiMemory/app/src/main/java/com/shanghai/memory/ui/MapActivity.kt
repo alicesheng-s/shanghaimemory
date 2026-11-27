@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -110,6 +111,11 @@ class MapActivity : ThemedActivity() {
     private var routeLine: Polyline? = null
 
     private var drawerOpen = false
+    private val drawerBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            toggleDrawer(false)
+        }
+    }
     private var movedToUser = false
 
     // 实时位置与朝向导航状态
@@ -169,7 +175,9 @@ class MapActivity : ThemedActivity() {
 
     private fun loadPolicy() {
         lifecycleScope.launch {
-            val fresh = GatePolicy.of(store.current())
+            val settings = store.current()
+            binding.actionBar.visibility = if (settings.showQuickBar) View.VISIBLE else View.GONE
+            val fresh = GatePolicy.of(settings)
             if (fresh == policy) return@launch
             policy = fresh
             lastResolvedKey = null
@@ -182,7 +190,7 @@ class MapActivity : ThemedActivity() {
 
     private fun setUpInsets() {
         padForSystemBars(binding.topOverlay, bottom = false)
-        padForSystemBars(binding.actionBar, left = false, right = false, bottom = false)
+        padForSystemBars(binding.rightControls, left = false, right = false, bottom = false)
         liftAboveNavigationBar(binding.bottomDock)
         padForSystemBars(binding.drawerPanel)
     }
@@ -258,6 +266,7 @@ class MapActivity : ThemedActivity() {
             startActivity(ChatActivity.storyIntent(this, poi))
         }
         binding.btnSearch.setOnClickListener { showSearchDialog() }
+        binding.btnNav.setOnClickListener { toggleLiveNavigation() }
         binding.btnChat.setOnClickListener {
             startActivity(ChatActivity.open(this))
         }
@@ -819,6 +828,7 @@ class MapActivity : ThemedActivity() {
     // ---- 侧栏 ----
 
     private fun setUpDrawer() {
+        onBackPressedDispatcher.addCallback(this, drawerBackCallback)
         binding.btnMenu.setOnClickListener { toggleDrawer(!drawerOpen) }
         binding.drawerScrim.setOnClickListener { toggleDrawer(false) }
         binding.btnDrawerNav.setOnClickListener {
@@ -856,6 +866,23 @@ class MapActivity : ThemedActivity() {
         binding.icDrawerNav.imageTintList = ColorStateList.valueOf(
             if (liveNavEnabled) colors.accentBright else colors.accent
         )
+        val bg = binding.btnNav.background?.mutate()
+        if (bg is android.graphics.drawable.GradientDrawable) {
+            val fill = if (liveNavEnabled) {
+                colors.accent
+            } else {
+                com.shanghai.memory.ui.theme.ThemeEngine.withSurfaceAlpha(
+                    colors.card,
+                    com.shanghai.memory.ui.theme.Role.CARD
+                )
+            }
+            val strokePx = kotlin.math.max(1, (resources.displayMetrics.density).toInt())
+            bg.setColor(fill)
+            bg.setStroke(strokePx, if (liveNavEnabled) colors.accent else colors.line)
+        }
+        binding.btnNav.imageTintList = ColorStateList.valueOf(
+            if (liveNavEnabled) colors.onAccent else colors.accent
+        )
     }
 
     private fun updateDrawerPaletteLabel() {
@@ -872,6 +899,7 @@ class MapActivity : ThemedActivity() {
     private fun toggleDrawer(open: Boolean) {
         if (drawerOpen == open) return
         drawerOpen = open
+        drawerBackCallback.isEnabled = open
         val panel = binding.drawerPanel
         val scrim = binding.drawerScrim
         val width = DRAWER_WIDTH_DP * resources.displayMetrics.density
@@ -889,15 +917,6 @@ class MapActivity : ThemedActivity() {
             scrim.animate().alpha(0f).setDuration(160)
                 .withEndAction { scrim.visibility = View.GONE }
                 .start()
-        }
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        if (drawerOpen) {
-            toggleDrawer(false)
-        } else {
-            super.onBackPressed()
         }
     }
 

@@ -22,8 +22,8 @@ android {
         applicationId = "com.shanghai.memory"
         minSdk = 26
         targetSdk = 36
-        versionCode = 18
-        versionName = "0.9.5"
+        versionCode = 20
+        versionName = "1.0.0"
 
         // 高德 Android Key 由 local.properties 注入，不硬编码进仓库
         manifestPlaceholders["AMAP_KEY"] = localProp("AMAP_KEY")

@@ -6,6 +6,8 @@ import com.shanghai.memory.data.model.PoiInfo
 import com.shanghai.memory.data.model.SearchHit
 import com.shanghai.memory.data.model.StoryPhase
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 
@@ -33,6 +35,8 @@ class StoryRepository(
 
     fun story(poi: PoiInfo): Flow<StoryEvent> = channelFlow {
         val settings = settingsStore.current()
+        val parentName = if (settings.expandParentContext) PlaceContext.broaden(poi.name) else null
+        val searchSubject = parentName ?: poi.name
 
         if (!settings.hasKey) {
             send(StoryEvent.Phase(StoryPhase.OFFLINE_CURATED))
@@ -41,7 +45,7 @@ class StoryRepository(
             } else {
                 "还没填 API Key，先为你展示离线策展故事"
             }
-            send(StoryEvent.Curated(CuratedStories.forPoi(poi), reason))
+            send(StoryEvent.Curated(CuratedStories.forPoi(poi, settings.expandParentContext), reason))
             return@channelFlow
         }
 
@@ -51,15 +55,15 @@ class StoryRepository(
         try {
             if (settings.canSearch) {
                 send(StoryEvent.Phase(StoryPhase.SEARCHING))
-                hits = search.search(settings, buildQuery(poi))
+                hits = gatherSources(settings, searchSubject, poi.district)
                 if (hits.isNotEmpty()) send(StoryEvent.Sources(hits))
             }
 
             send(StoryEvent.Phase(StoryPhase.GENERATING))
             val userPrompt = if (hits.isNotEmpty()) {
-                PromptTemplates.storyUserPrompt(poi, hits)
+                PromptTemplates.storyUserPrompt(poi, hits, parentName, settings.expandParentContext)
             } else {
-                PromptTemplates.storyUserPromptFallback(poi)
+                PromptTemplates.storyUserPromptFallback(poi, parentName, settings.expandParentContext)
             }
 
             chat.stream(
@@ -85,7 +89,7 @@ class StoryRepository(
                 } else {
                     "刚才没连上（$why），先切换成离线策展故事"
                 }
-                send(StoryEvent.Curated(CuratedStories.forPoi(poi), reason))
+                send(StoryEvent.Curated(CuratedStories.forPoi(poi, settings.expandParentContext), reason))
             } else {
                 send(StoryEvent.Phase(StoryPhase.FAILED))
                 send(
@@ -98,8 +102,38 @@ class StoryRepository(
         }
     }
 
-    private fun buildQuery(poi: PoiInfo): String {
-        val district = poi.district.ifBlank { "上海" }
-        return "${poi.name} $district 历史 由来".take(60)
+    /** 并行发起「历史由来」与「官方公众号/官媒近期活动」双路检索，合并去重后喂给模型 */
+    private suspend fun gatherSources(
+        settings: AppSettings,
+        subject: String,
+        district: String
+    ): List<SearchHit> = coroutineScope {
+        val historyJob = async {
+            search.search(
+                settings = settings,
+                query = TopicRouting.storyHistoryQuery(subject, district),
+                count = 5,
+                topic = TopicRouting.Topic.GENERAL
+            )
+        }
+        val officialJob = async {
+            val primary = search.search(
+                settings = settings,
+                query = TopicRouting.officialActivityQuery(subject),
+                count = 5,
+                topic = TopicRouting.Topic.OFFICIAL
+            )
+            primary.ifEmpty {
+                search.search(
+                    settings = settings,
+                    query = TopicRouting.recentActivityQuery(subject),
+                    count = 4,
+                    topic = TopicRouting.Topic.GENERAL
+                )
+            }
+        }
+        val histHits = historyJob.await()
+        val officialHits = officialJob.await()
+        (histHits.take(4) + officialHits.take(4)).distinctBy { it.url }.take(8)
     }
 }

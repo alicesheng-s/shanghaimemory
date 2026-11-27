@@ -4,6 +4,7 @@ import android.app.Application
 import com.amap.api.location.AMapLocationClient
 import com.amap.api.maps.MapsInitializer
 import com.amap.api.services.core.ServiceSettings
+import com.shanghai.memory.data.AmapKeyManager
 import com.shanghai.memory.data.SettingsStore
 import com.shanghai.memory.ui.theme.Appearance
 import kotlinx.coroutines.runBlocking
@@ -30,7 +31,9 @@ class App : Application() {
         AMapLocationClient.updatePrivacyAgree(this, true)
 
         runBlocking {
-            Appearance.pushToState(this@App)
+            val current = SettingsStore(this@App).current()
+            AmapKeyManager.apply(this@App, current.amapApiKey)
+            Appearance.applyFrom(current, Appearance.systemDark(this@App))
         }
     }
 }

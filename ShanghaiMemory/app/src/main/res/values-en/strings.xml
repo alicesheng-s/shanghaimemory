@@ -51,6 +51,7 @@
     <string name="drawer_theme_dark">Dark</string>
 
     <string name="nav_recenter">Re-center on me</string>
+    <string name="nav_toggle_desc">Toggle live navigation</string>
     <string name="nav_pill_active">Live Nav · Facing %1$s %2$d°</string>
     <string name="nav_pill_paused">Follow paused · Tap right button to re-center</string>
     <string name="nav_pill_no_compass">Live location on (no compass sensor on device)</string>
@@ -149,6 +150,8 @@
     <string name="settings_menu_appearance_desc">Color palette, light/dark mode, corners, transparency &amp; typography</string>
     <string name="settings_menu_model">AI Model &amp; Key</string>
     <string name="settings_menu_model_desc">Provider, API Key, model name &amp; connection speed test</string>
+    <string name="settings_menu_map_api">Map API Key</string>
+    <string name="settings_menu_map_api_desc">Use your own AMap Android API Key (blank uses built-in)</string>
     <string name="settings_menu_reading">Web Search &amp; Voice</string>
     <string name="settings_menu_reading_desc">Fact-checking search toggle, read-aloud voice &amp; speech speed</string>
     <string name="settings_menu_gate">Landmark Filter</string>
@@ -158,6 +161,10 @@
 
     <string name="settings_section_appearance">Color Palette</string>
     <string name="settings_section_model">Model &amp; Credentials</string>
+    <string name="settings_section_map_api">AMap Configuration</string>
+    <string name="settings_amap_key">AMap Android Key</string>
+    <string name="settings_amap_key_hint">Leave blank to use built-in default Key</string>
+    <string name="settings_amap_key_desc">Enter your Android platform Key from AMap Open Platform (console.amap.com), stored locally on your device. Search and GPS update immediately; restart the app if base-map tiles need re-auth.</string>
     <string name="settings_section_reading">Web Search &amp; Voice</string>
     <string name="settings_section_gate">Landmark Rules</string>
 
@@ -191,6 +198,8 @@
     <string name="settings_gate_keywords">Custom allow keywords</string>
     <string name="settings_gate_keywords_hint">Comma-separated, e.g. warehouse, mill, dock</string>
     <string name="settings_gate_keywords_desc">Any place whose name matches these words is always allowed, bypassing the switches above.</string>
+    <string name="settings_gate_expand_parent">Expand sub-spot context</string>
+    <string name="settings_gate_expand_parent_desc">On by default. Standing at a sub-spot like "SUEP Relief Wall Lawn" automatically includes its broader parent landmark ("Shanghai University of Electric Power"). Turn off to tell only the exact pin name.</string>
 
     <string name="settings_palette_desc">Tap to switch palettes—takes effect immediately.</string>
     <string name="settings_light">Theme Mode</string>
@@ -219,6 +228,8 @@
     <string name="settings_alpha">Card Opacity</string>
     <string name="settings_alpha_desc">Lower opacity lets the map show gently beneath panels while keeping text crisp.</string>
     <string name="alpha_value">Opacity %1$d%%</string>
+    <string name="settings_quick_bar">Show map right quick bar</string>
+    <string name="settings_quick_bar_desc">On by default. Turn off to hide the right floating shortcut buttons for a cleaner map view (still reachable from the top-left menu).</string>
 
     <!-- Onboarding -->
     <string name="onb_skip">Skip</string>

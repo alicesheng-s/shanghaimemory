@@ -14,7 +14,9 @@ data class GatePolicy(
     /** 严格模式：只认明确的历史建筑，宁可漏也不错 */
     val strictOnly: Boolean = false,
     /** 自定义关键词，输入「洋行、纱厂」这类，名字命中就放行 */
-    val extraKeywords: String = ""
+    val extraKeywords: String = "",
+    /** 关联更大范围地标讲述：默认开启，识别子地点时联动父级学校/园区/厂区一起检索与讲述 */
+    val expandParentContext: Boolean = true
 ) {
 
     /** 逗号、顿号、分号、空格都能当分隔符，用户不必记格式 */
@@ -29,7 +31,8 @@ data class GatePolicy(
             allowPublicInstitution = settings.allowPublicInstitution,
             allowBusiness = settings.allowBusiness,
             strictOnly = settings.strictOnly,
-            extraKeywords = settings.extraKeywords
+            extraKeywords = settings.extraKeywords,
+            expandParentContext = settings.expandParentContext
         )
     }
 }

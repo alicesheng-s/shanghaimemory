@@ -242,10 +242,15 @@ Curated offline story; no web check performed. For reference only.
         )
     )
 
-    fun forPoi(poi: PoiInfo): String {
+    fun forPoi(poi: PoiInfo, expandParent: Boolean = true): String {
         val name = poi.name
+        val parent = if (expandParent) PlaceContext.broaden(name) else null
         val matched = entries.firstOrNull { entry ->
             entry.keys.any { key -> name.contains(key, ignoreCase = true) }
+        } ?: parent?.let { broad ->
+            entries.firstOrNull { entry ->
+                entry.keys.any { key -> broad.contains(key, ignoreCase = true) }
+            }
         }
         return if (ThemeState.isEnglish) {
             matched?.bodyEn ?: genericEn(poi)

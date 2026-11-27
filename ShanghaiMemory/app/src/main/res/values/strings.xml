@@ -51,6 +51,7 @@
     <string name="drawer_theme_dark">暗色模式</string>
 
     <string name="nav_recenter">回到我的位置</string>
+    <string name="nav_toggle_desc">开启或关闭实时导航</string>
     <string name="nav_pill_active">实时导航中 · 面向%1$s %2$d°</string>
     <string name="nav_pill_paused">已暂停跟随 · 拖动查看中（点右侧按钮回正）</string>
     <string name="nav_pill_no_compass">实时定位中（设备缺少方向传感器）</string>
@@ -149,6 +150,8 @@
     <string name="settings_menu_appearance_desc">主题配色、亮暗模式、圆角、透明度与字体大小</string>
     <string name="settings_menu_model">AI 模型服务</string>
     <string name="settings_menu_model_desc">填写 API Key、选择服务商与测试连接速度</string>
+    <string name="settings_menu_map_api">地图 API 服务</string>
+    <string name="settings_menu_map_api_desc">自定义高德地图 Android API Key（留空使用内置密钥）</string>
     <string name="settings_menu_reading">查证与语音朗读</string>
     <string name="settings_menu_reading_desc">边查资料边讲、语音朗读开关与语速调节</string>
     <string name="settings_menu_gate">哪些地方值得讲</string>
@@ -158,6 +161,10 @@
 
     <string name="settings_section_appearance">配色主题</string>
     <string name="settings_section_model">模型与密钥</string>
+    <string name="settings_section_map_api">高德地图接入</string>
+    <string name="settings_amap_key">高德地图 Android Key</string>
+    <string name="settings_amap_key_hint">留空则使用内置默认密钥</string>
+    <string name="settings_amap_key_desc">填写你在高德开放平台（console.amap.com）申请的 Android 平台 Key，只保存在本机。保存后检索与定位即时生效，若更换底图鉴权请重启应用。</string>
     <string name="settings_section_reading">联网查证与语音</string>
     <string name="settings_section_gate">地标筛选规则</string>
 
@@ -191,6 +198,8 @@
     <string name="settings_gate_keywords">我特别想看的关键词</string>
     <string name="settings_gate_keywords_hint">逗号隔开，比如：洋行、纱厂、海关</string>
     <string name="settings_gate_keywords_desc">只要地名里带着这些词，不管上面怎么设都会直接放行。</string>
+    <string name="settings_gate_expand_parent">关联更大范围地标讲述</string>
+    <string name="settings_gate_expand_parent_desc">默认开启。比如停在「上海电力大学浮雕墙小草坪」时，会连同「上海电力大学」一并检索讲述；关闭后只按当前小地名本身介绍。</string>
 
     <string name="settings_palette_desc">点按切换配色，界面会立刻换新装。</string>
     <string name="settings_light">亮暗外观</string>
@@ -219,6 +228,8 @@
     <string name="settings_alpha">卡片透明度</string>
     <string name="settings_alpha_desc">调低可以让浮卡隐约透出底下的地图；文字始终清晰不透明。</string>
     <string name="alpha_value">不透明度 %1$d%%</string>
+    <string name="settings_quick_bar">显示地图右侧快捷栏</string>
+    <string name="settings_quick_bar_desc">默认开启。关闭后会隐藏右侧的搜索、导航、路线、聊天与设置悬浮按钮，保留纯净地图视图（仍可从左上角菜单进入）。</string>
 
     <!-- 新手引导 -->
     <string name="onb_skip">先跳过</string>

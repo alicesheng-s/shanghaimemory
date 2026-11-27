@@ -44,7 +44,7 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
 
                     // 话题决定去哪些站点找：site: 运算符是官方 query 里支持的写法
                     settings.provider.searchKind == SearchKind.DEEPSEEK_TOOLS ->
-                        deepSeekSearch(settings, TopicRouting.decorate(query, topic), count, query)
+                        deepSeekSearch(settings, TopicRouting.decorate(query, topic), count, query, topic)
 
                     settings.provider.searchKind == SearchKind.ZHIPU_WEB ->
                         zhipuSearch(settings, query, count)
@@ -58,12 +58,18 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
         settings: AppSettings,
         query: String,
         count: Int,
-        original: String = query
+        original: String = query,
+        topic: TopicRouting.Topic = TopicRouting.Topic.GENERAL
     ): List<SearchHit> {
+        val intentQuestion = if (topic == TopicRouting.Topic.OFFICIAL) {
+            "上海 $original 官方公众号与主流媒体发布的近期活动、展览或开放信息"
+        } else {
+            "上海 $original 的历史与近况"
+        }
         val payload = JSONObject().apply {
             put("query", query.take(128))
             put("count", count.coerceIn(1, 50))
-            put("ori_question", "上海 $original 的历史与近况".take(128))
+            put("ori_question", intentQuestion.take(128))
             put("need_content", false)
         }
         val request = Request.Builder()

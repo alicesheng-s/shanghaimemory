@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import androidx.activity.OnBackPressedCallback
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -52,9 +53,15 @@ class RouteActivity : ThemedActivity() {
     private var userLng = 0.0
     private var workJob: Job? = null
     private var locationClient: AMapLocationClient? = null
+    private val subPageBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            showPage(parentOf(page))
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        onBackPressedDispatcher.addCallback(this, subPageBackCallback)
         binding = ActivityRouteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -155,6 +162,7 @@ class RouteActivity : ThemedActivity() {
             }
         }
         page = target
+        subPageBackCallback.isEnabled = target != PAGE_MENU
         if (target != PAGE_CUSTOM) hideKeyboard()
         binding.txtRouteTitle.text = when (target) {
             PAGE_PRESET -> getString(R.string.route_preset_title)
@@ -163,11 +171,6 @@ class RouteActivity : ThemedActivity() {
             else -> getString(R.string.route_pick_title)
         }
         if (animate) views[target]?.let { ThemeFx.slideInPage(it, forward = target > old) }
-    }
-
-    /** 系统返回键按层级退：子页回上一级，一级菜单才真的退出 */
-    override fun onBackPressed() {
-        if (page == PAGE_MENU) super.onBackPressed() else showPage(parentOf(page))
     }
 
     private fun hideKeyboard() {

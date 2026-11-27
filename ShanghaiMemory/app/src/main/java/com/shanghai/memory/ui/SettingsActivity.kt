@@ -9,11 +9,13 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.shanghai.memory.R
+import com.shanghai.memory.data.AmapKeyManager
 import com.shanghai.memory.data.AppSettings
 import com.shanghai.memory.data.PromptTemplates
 import com.shanghai.memory.data.SettingsStore
@@ -62,6 +64,11 @@ class SettingsActivity : ThemedActivity() {
 
     /** 当前的落盘外观，改任一项都在它基础上推一次 */
     private var appearance: AppSettings = AppSettings()
+    private val subPageBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
+            showPage(PAGE_MENU)
+        }
+    }
 
     private val pickFont = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) importFont(uri)
@@ -69,6 +76,7 @@ class SettingsActivity : ThemedActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        onBackPressedDispatcher.addCallback(this, subPageBackCallback)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -90,9 +98,15 @@ class SettingsActivity : ThemedActivity() {
         binding.menuLanguage.setOnClickListener { chooseLanguage() }
         binding.menuAppearance.setOnClickListener { showPage(PAGE_APPEARANCE) }
         binding.menuModel.setOnClickListener { showPage(PAGE_MODEL) }
+        binding.menuMapApi.setOnClickListener { showPage(PAGE_MAP_API) }
         binding.menuReading.setOnClickListener { showPage(PAGE_READING) }
         binding.menuGate.setOnClickListener { showPage(PAGE_GATE) }
         binding.menuOnboarding.setOnClickListener { startActivity(OnboardingActivity.intent(this)) }
+
+        binding.swQuickBar.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
+            lifecycleScope.launch { store.setShowQuickBar(checked) }
+        }
 
         binding.sbAlpha.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(bar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -179,6 +193,10 @@ class SettingsActivity : ThemedActivity() {
                 if (checked) binding.swBusiness.isChecked = false
             }
         }
+        binding.swExpandParent.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
+            lifecycleScope.launch { store.setExpandParentContext(checked) }
+        }
         binding.etKeywords.setOnFocusChangeListener { _, focused ->
             if (!focused) {
                 lifecycleScope.launch { store.setExtraKeywords(binding.etKeywords.text.toString()) }
@@ -225,13 +243,16 @@ class SettingsActivity : ThemedActivity() {
         binding.etApikey.setText(settings.apiKey)
         binding.etModel.setText(settings.model)
         binding.etBaseurl.setText(settings.baseUrl)
+        binding.etAmapKey.setText(settings.amapApiKey)
         // 回填会触发上面那几个监听器：不当成用户操作，否则会把同样的值再写一遍盘
         suppressToggle = true
+        binding.swQuickBar.isChecked = settings.showQuickBar
         binding.swSearch.isChecked = settings.webSearchEnabled
         binding.swTts.isChecked = settings.ttsEnabled
         binding.swPublicInstitution.isChecked = settings.allowPublicInstitution
         binding.swBusiness.isChecked = settings.allowBusiness
         binding.swStrict.isChecked = settings.strictOnly
+        binding.swExpandParent.isChecked = settings.expandParentContext
         suppressToggle = false
         binding.etKeywords.setText(settings.extraKeywords)
         binding.sbTtsSpeed.progress = progressOf(settings.ttsSpeed)
@@ -314,6 +335,7 @@ class SettingsActivity : ThemedActivity() {
             PAGE_MENU to binding.pageMenu,
             PAGE_APPEARANCE to binding.pageAppearance,
             PAGE_MODEL to binding.pageModel,
+            PAGE_MAP_API to binding.pageMapApi,
             PAGE_READING to binding.pageReading,
             PAGE_GATE to binding.pageGate
         )
@@ -321,6 +343,7 @@ class SettingsActivity : ThemedActivity() {
         val outgoing = pages.firstOrNull { it.first == currentPage }?.second
         val forward = page > currentPage
         currentPage = page
+        subPageBackCallback.isEnabled = page != PAGE_MENU
 
         // 菜单页不需要「测试连通性/保存」；测试按钮只在模型页有意义
         binding.footerActions.visibility = if (page == PAGE_MENU) View.GONE else View.VISIBLE
@@ -329,11 +352,17 @@ class SettingsActivity : ThemedActivity() {
             when (page) {
                 PAGE_APPEARANCE -> R.string.settings_menu_appearance
                 PAGE_MODEL -> R.string.settings_menu_model
+                PAGE_MAP_API -> R.string.settings_menu_map_api
                 PAGE_READING -> R.string.settings_menu_reading
                 PAGE_GATE -> R.string.settings_menu_gate
                 else -> R.string.settings_title
             }
         )
+        when (page) {
+            PAGE_MODEL -> updateHint()
+            PAGE_MAP_API -> updateMapHint()
+            else -> binding.txtStatus.text = ""
+        }
 
         if (!animate) {
             pages.forEach { (key, view) -> view.visibility = if (key == page) View.VISIBLE else View.GONE }
@@ -343,11 +372,6 @@ class SettingsActivity : ThemedActivity() {
             ThemeFx.slideOutPage(outgoing, forward)
         }
         ThemeFx.slideInPage(incoming, forward)
-    }
-
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        if (currentPage != PAGE_MENU) showPage(PAGE_MENU) else super.onBackPressed()
     }
 
     private fun chooseLanguage() {
@@ -744,6 +768,9 @@ class SettingsActivity : ThemedActivity() {
             allowBusiness = binding.swBusiness.isChecked,
             strictOnly = binding.swStrict.isChecked,
             extraKeywords = binding.etKeywords.text.toString().trim(),
+            expandParentContext = binding.swExpandParent.isChecked,
+            amapApiKey = binding.etAmapKey.text.toString().trim(),
+            showQuickBar = binding.swQuickBar.isChecked,
             lightMode = appearance.lightMode,
             followSystem = appearance.followSystem,
             customAccent = appearance.customAccent,
@@ -759,6 +786,18 @@ class SettingsActivity : ThemedActivity() {
         )
     }
 
+    private fun updateMapHint() {
+        val en = ThemeState.isEnglish
+        val custom = binding.etAmapKey.text.toString().trim()
+        binding.txtStatus.text = if (custom.isBlank()) {
+            if (en) "Currently using the built-in default AMap Key."
+            else "当前正在使用内置默认高德地图密钥。"
+        } else {
+            if (en) "Currently using your custom AMap Key (stored locally)."
+            else "当前已启用你自定义的高德地图密钥（仅保存在本机）。"
+        }
+    }
+
     private fun save() {
         val en = ThemeState.isEnglish
         val draft = currentInput()
@@ -770,16 +809,31 @@ class SettingsActivity : ThemedActivity() {
             store.setApiKey(draft.apiKey)
             store.setModel(draft.model)
             store.setBaseUrl(draft.baseUrl)
+            store.setAmapApiKey(draft.amapApiKey)
+            AmapKeyManager.apply(this@SettingsActivity, draft.amapApiKey)
+            store.setShowQuickBar(draft.showQuickBar)
             store.setWebSearch(draft.webSearchEnabled)
             store.setTtsEnabled(draft.ttsEnabled)
             store.setTtsSpeed(draft.ttsSpeed)
             store.setExtraKeywords(draft.extraKeywords)
-            binding.txtStatus.text = if (draft.apiKey.isBlank()) {
-                if (en) "Saved. Add an API Key anytime to unlock AI stories."
-                else "已保存。还没填 API Key，故事暂时先用离线底稿顶着。"
-            } else {
-                if (en) "Saved locally on this device."
-                else "已经稳妥保存在手机本地。"
+            store.setExpandParentContext(draft.expandParentContext)
+            binding.txtStatus.text = when {
+                currentPage == PAGE_MAP_API && draft.amapApiKey.isBlank() -> {
+                    if (en) "Custom map key cleared; reverted to the built-in default key."
+                    else "已清除自定义地图 Key，已恢复使用内置默认密钥。"
+                }
+                currentPage == PAGE_MAP_API -> {
+                    if (en) "Custom AMap Key saved locally. Restart the app to reload map tiles if needed."
+                    else "高德地图 Key 已稳妥保存在手机本地；如需重刷底图鉴权，完全重启应用即可。"
+                }
+                draft.apiKey.isBlank() -> {
+                    if (en) "Saved. Add an API Key anytime to unlock AI stories."
+                    else "已保存。还没填 API Key，故事暂时先用离线底稿顶着。"
+                }
+                else -> {
+                    if (en) "Saved locally on this device."
+                    else "已经稳妥保存在手机本地。"
+                }
             }
             Toast.makeText(this@SettingsActivity, R.string.settings_saved, Toast.LENGTH_SHORT).show()
         }
@@ -894,6 +948,7 @@ class SettingsActivity : ThemedActivity() {
         const val PAGE_MODEL = 2
         const val PAGE_READING = 3
         const val PAGE_GATE = 4
+        const val PAGE_MAP_API = 5
         const val KEY_PAGE = "settings_page"
         /** 切到「自定义」后要弹主色选择，但界面会先 recreate，只能挂个标记等重建完再弹 */
         @Volatile var pendingAccentPicker = false

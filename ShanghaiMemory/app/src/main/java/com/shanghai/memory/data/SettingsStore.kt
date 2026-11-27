@@ -27,6 +27,10 @@ data class AppSettings(
     val allowBusiness: Boolean = false,
     val strictOnly: Boolean = false,
     val extraKeywords: String = "",
+    val expandParentContext: Boolean = true,
+    // 地图服务与快捷入口
+    val amapApiKey: String = "",
+    val showQuickBar: Boolean = true,
     // 外观：亮暗、主色、圆角、字体
     val lightMode: Boolean = false,
     val followSystem: Boolean = true,
@@ -67,6 +71,9 @@ class SettingsStore(private val context: Context) {
         val allowBusiness = booleanPreferencesKey("gate_business")
         val strictOnly = booleanPreferencesKey("gate_strict_only")
         val extraKeywords = stringPreferencesKey("gate_extra_keywords")
+        val expandParentContext = booleanPreferencesKey("gate_expand_parent")
+        val amapApiKey = stringPreferencesKey("amap_api_key")
+        val showQuickBar = booleanPreferencesKey("ui_show_quick_bar")
         val lightMode = booleanPreferencesKey("ui_light_mode")
         val followSystem = booleanPreferencesKey("ui_follow_system")
         val customAccent = stringPreferencesKey("ui_custom_accent")
@@ -97,6 +104,9 @@ class SettingsStore(private val context: Context) {
             allowBusiness = p[Key.allowBusiness] ?: false,
             strictOnly = p[Key.strictOnly] ?: false,
             extraKeywords = p[Key.extraKeywords].orEmpty(),
+            expandParentContext = p[Key.expandParentContext] ?: true,
+            amapApiKey = p[Key.amapApiKey].orEmpty(),
+            showQuickBar = p[Key.showQuickBar] ?: true,
             lightMode = p[Key.lightMode] ?: false,
             followSystem = p[Key.followSystem] ?: true,
             customAccent = p[Key.customAccent].orEmpty(),
@@ -179,6 +189,18 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setExtraKeywords(value: String) {
         context.settingsDataStore.edit { it[Key.extraKeywords] = value.trim() }
+    }
+
+    suspend fun setExpandParentContext(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Key.expandParentContext] = enabled }
+    }
+
+    suspend fun setAmapApiKey(value: String) {
+        context.settingsDataStore.edit { it[Key.amapApiKey] = value.trim() }
+    }
+
+    suspend fun setShowQuickBar(enabled: Boolean) {
+        context.settingsDataStore.edit { it[Key.showQuickBar] = enabled }
     }
 
     suspend fun setLightMode(enabled: Boolean) {
