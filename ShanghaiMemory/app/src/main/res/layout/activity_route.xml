@@ -227,6 +227,33 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/theme_lingang"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <TextView
+                        style="@style/Text.Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/route_theme_lingang"
+                        android:textColor="?attr/shText" />
+
+                    <TextView
+                        style="@style/Text.Muted"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="@string/route_theme_lingang_desc" />
+                </LinearLayout>
+
+                <LinearLayout
                     android:id="@+id/custom_presets_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

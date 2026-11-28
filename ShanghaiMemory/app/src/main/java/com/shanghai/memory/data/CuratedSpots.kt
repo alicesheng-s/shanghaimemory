@@ -507,6 +507,242 @@ object CuratedSpots {
         ),
     )
 
+    /** 临港之旅（20 处）：天文航海、大学城产学研、滴水湖湿地海绵城市与东海门户地标 */
+    private val LINGANG_ZH = listOf(
+        CuratedSpot(
+            name = "上海天文馆",
+            area = "临港 · 临港大道380号",
+            blurb = "全球建筑规模最大的天文馆，无直角圆洞天窗与倒转穹顶把整栋建筑化作精密的太阳观测仪。"
+        ),
+        CuratedSpot(
+            name = "中国航海博物馆",
+            area = "临港 · 申港大道197号",
+            blurb = "中国首家国家级航海博物馆，标志性双白帆造型内陈列福船、宝船模型与古今航海仪器。"
+        ),
+        CuratedSpot(
+            name = "滴水湖",
+            area = "临港 · 环湖西一路",
+            blurb = "直径约 2.6 公里的圆形人工湖，由「一滴水落入大海」规划意象而生，是临港新片区的空间圆心。"
+        ),
+        CuratedSpot(
+            name = "上海海昌海洋公园",
+            area = "临港 · 银飞路166号",
+            blurb = "临近滴水湖的大型海洋科普乐园，集南极企鹅、北极熊、鲸鲨展馆与水下隧道于一体。"
+        ),
+        CuratedSpot(
+            name = "上海电力大学（临港校区）",
+            area = "临港 · 沪城环路1851号",
+            blurb = "建有新能源微电网与智能电网实验基地，将上海电力教育的百年薪火延伸至东海之滨。",
+            searchKey = "上海电力大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "上海海洋大学（临港校区）",
+            area = "临港 · 沪城环路999号",
+            blurb = "源起 1912 年江苏省立水产学校，明湖湿地与校史远洋科考档案讲述百年向海而兴历程。",
+            searchKey = "上海海洋大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "上海海事大学（临港校区）",
+            area = "临港 · 海港大道1550号",
+            blurb = "国际航运与海洋工程重镇，校园靠近洋山门户港，校内保留实习航运教学建筑与水运印记。",
+            searchKey = "上海海事大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "上海电机学院（临港校区）",
+            area = "临港 · 水华路300号",
+            blurb = "源于 1953 年上海电器制造学校，聚焦大型发电电机、风电装备与智能制造产教融合。",
+            searchKey = "上海电机学院(临港校区)"
+        ),
+        CuratedSpot(
+            name = "上海建桥学院（临港校区）",
+            area = "临港 · 沪城环路1111号",
+            blurb = "坐落于临港大学城中心地带的应用型高校，校园绿轴与校内雷锋文化展馆颇具人气。",
+            searchKey = "上海建桥学院"
+        ),
+        CuratedSpot(
+            name = "南汇嘴观海公园",
+            area = "临港 · 世纪塘路东端",
+            blurb = "上海市陆域最东南角，潮汐滩涂吹海风看日出，标志性不锈钢「司南鱼」雕塑指向大洋。",
+            searchKey = "南汇嘴观海公园"
+        ),
+        CuratedSpot(
+            name = "朵云书院·滴水湖店",
+            area = "临港 · 环湖西一路91号港城广场",
+            blurb = "20 米通透落地窗直面整片滴水湖，「低头看书、抬头看海」的临港人气城市文化客厅。",
+            searchKey = "朵云书院(滴水湖店)"
+        ),
+        CuratedSpot(
+            name = "临港科技智慧图书馆",
+            area = "临港 · 海洋七路289弄",
+            blurb = "专注航空航天、海洋科技与人工智能前沿典籍的沉浸式科技书馆，与园区科创人群相伴。"
+        ),
+        CuratedSpot(
+            name = "星空之境海绵公园",
+            area = "临港 · 环湖北三路",
+            blurb = "上海标杆级城市海绵湿地公园，8 座星象主题桥梁与天文台式建筑串联起生态调蓄水系。"
+        ),
+        CuratedSpot(
+            name = "春花秋色公园",
+            area = "临港 · 环湖西一路南侧绿带",
+            blurb = "沿二环带舒展的大型生态花海与林荫绿道，是环滴水湖骑行与慢跑的经典景观段。"
+        ),
+        CuratedSpot(
+            name = "耀雪冰雪世界",
+            area = "临港 · 沪城环路2088弄",
+            blurb = "临港大型室内滑雪与冰雪综合体，把立体真雪滑道与极地建筑体验直接搬到东海湖畔。"
+        ),
+        CuratedSpot(
+            name = "港城广场文化艺术中心",
+            area = "临港 · 环湖西一路99号",
+            blurb = "紧贴湖岸的现代街区与文化复合空间，定期承办临港公共艺术展、文创市集与湖畔演出。",
+            searchKey = "港城广场"
+        ),
+        CuratedSpot(
+            name = "东海大桥北堍",
+            area = "临港 · 东海大桥起点",
+            blurb = "全长 32.5 公里跨海长虹的陆上起点，远眺巨龙越过海面直通洋山深水自动化码头。",
+            searchKey = "东海大桥"
+        ),
+        CuratedSpot(
+            name = "上海鲜花港",
+            area = "浦东 · 东海农场振东路",
+            blurb = "紧邻临港北侧的现代花卉科技园，春日郁金香花海背后是数十年盐碱滩涂土壤改良的成果。"
+        ),
+        CuratedSpot(
+            name = "临港当代美术馆",
+            area = "临港 · 水芸路418号",
+            blurb = "扎根临港新城核心区的公益当代艺术空间，以青年艺术、城市影像与公共设计展为主打。"
+        ),
+        CuratedSpot(
+            name = "芦潮港公园",
+            area = "临港 · 芦潮路168号",
+            blurb = "紧邻百年渔港芦潮港与海防长堤，见证这片滩涂从古渔盐港一步步迈向国际深水门户。"
+        ),
+    )
+
+    private val LINGANG_EN = listOf(
+        CuratedSpot(
+            name = "Shanghai Astronomy Museum",
+            area = "Lingang · 380 Lingang Ave",
+            blurb = "The world's largest planetarium by area, built with zero right angles as an architectural astronomical sundial.",
+            searchKey = "上海天文馆"
+        ),
+        CuratedSpot(
+            name = "China Maritime Museum",
+            area = "Lingang · 197 Shengang Ave",
+            blurb = "China's first national maritime museum, framed by twin white-sail canopies housing historic vessels and charts.",
+            searchKey = "中国航海博物馆"
+        ),
+        CuratedSpot(
+            name = "Dishui Lake",
+            area = "Lingang · West Huanhu 1st Rd",
+            blurb = "A 2.6-kilometer circular artificial lake inspired by a drop of water hitting the sea, anchoring Lingang's urban plan.",
+            searchKey = "滴水湖"
+        ),
+        CuratedSpot(
+            name = "Shanghai Haichang Ocean Park",
+            area = "Lingang · 166 Yinfei Rd",
+            blurb = "Major polar and deep-sea marine park near Dishui Lake with penguin halls, shark tunnels, and marine education.",
+            searchKey = "上海海昌海洋公园"
+        ),
+        CuratedSpot(
+            name = "Shanghai University of Electric Power (Lingang Campus)",
+            area = "Lingang · 1851 Huchenghuan Rd",
+            blurb = "Home to microgrid and smart-grid research labs, extending Shanghai's electric power heritage to the East China Sea coast.",
+            searchKey = "上海电力大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "Shanghai Ocean University (Lingang Campus)",
+            area = "Lingang · 999 Huchenghuan Rd",
+            blurb = "Tracing roots to 1912 fishery schools, preserving ocean expedition archives beside tranquil campus wetlands.",
+            searchKey = "上海海洋大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "Shanghai Maritime University (Lingang Campus)",
+            area = "Lingang · 1550 Haigang Ave",
+            blurb = "A cornerstone campus for international shipping and port engineering right beside Yangshan's logistics corridor.",
+            searchKey = "上海海事大学(临港校区)"
+        ),
+        CuratedSpot(
+            name = "Shanghai DianJi University (Lingang Campus)",
+            area = "Lingang · 300 Shuihua Rd",
+            blurb = "Founded in 1953 to train electrical machinery engineers, focusing today on wind power and smart manufacturing.",
+            searchKey = "上海电机学院(临港校区)"
+        ),
+        CuratedSpot(
+            name = "Shanghai Jian Qiao University",
+            area = "Lingang · 1111 Huchenghuan Rd",
+            blurb = "Applied engineering campus in Lingang's university town known for its green axes and community exhibition halls.",
+            searchKey = "上海建桥学院"
+        ),
+        CuratedSpot(
+            name = "Nanhuizui Seaview Park",
+            area = "Lingang · Shijitang Rd",
+            blurb = "Shanghai's southeasternmost reclaimed shoreline, marked by the steel 'Sinan Fish' sculpture facing open tidal flats.",
+            searchKey = "南汇嘴观海公园"
+        ),
+        CuratedSpot(
+            name = "Duoyun Books · Dishui Lake",
+            area = "Lingang · 91 West Huanhu 1st Rd",
+            blurb = "A lakefront bookstore and cultural study featuring 20-meter floor-to-ceiling windows overlooking Dishui Lake.",
+            searchKey = "朵云书院(滴水湖店)"
+        ),
+        CuratedSpot(
+            name = "Lingang Sci-Tech Smart Library",
+            area = "Lingang · Lane 289 Haiyang 7th Rd",
+            blurb = "An aerospace- and Frontier-tech-themed reading space built alongside Lingang's innovation laboratories.",
+            searchKey = "临港科技智慧图书馆"
+        ),
+        CuratedSpot(
+            name = "Starry Sky Sponge Park",
+            area = "Lingang · North Huanhu 3rd Rd",
+            blurb = "Flagship sponge-city wetland park linking eight constellation bridges, rain gardens, and astronomical pavilions.",
+            searchKey = "星空之境海绵公园"
+        ),
+        CuratedSpot(
+            name = "Chunhua Qiuse Park",
+            area = "Lingang · West Huanhu 1st Rd Greenbelt",
+            blurb = "Expansive second-ring greenbelt blooming across seasons, forming a favorite lakeside cycling and walking corridor.",
+            searchKey = "春花秋色公园"
+        ),
+        CuratedSpot(
+            name = "L+SNOW Indoor Skiing Theme Resort",
+            area = "Lingang · Lane 2088 Huchenghuan Rd",
+            blurb = "A monumental indoor snow and ice complex bringing real alpine slopes to Shanghai's eastern coast.",
+            searchKey = "耀雪冰雪世界"
+        ),
+        CuratedSpot(
+            name = "Harbor City Plaza Cultural Center",
+            area = "Lingang · 99 West Huanhu 1st Rd",
+            blurb = "Open lakeside civic plaza hosting public art installations, weekend markets, and coastal cultural events.",
+            searchKey = "港城广场"
+        ),
+        CuratedSpot(
+            name = "Donghai Bridge North Approach",
+            area = "Lingang · Start of Donghai Bridge",
+            blurb = "Mainland starting point of the 32.5-kilometer cross-sea bridge leading directly to Yangshan Deepwater Port.",
+            searchKey = "东海大桥"
+        ),
+        CuratedSpot(
+            name = "Shanghai Flower Port",
+            area = "Pudong · Zhendong Rd, Donghai Farm",
+            blurb = "Vibrant modern horticultural park north of Lingang built atop decades of coastal saline soil reclamation.",
+            searchKey = "上海鲜花港"
+        ),
+        CuratedSpot(
+            name = "Lingang Contemporary Art Museum",
+            area = "Lingang · 418 Shuiyun Rd",
+            blurb = "Public contemporary art venue in central Lingang spotlighting emerging artists, urban photography, and design.",
+            searchKey = "临港当代美术馆"
+        ),
+        CuratedSpot(
+            name = "Luchaogang Park",
+            area = "Lingang · 168 Luchao Rd",
+            blurb = "Quiet coastal park beside historic Luchao fishing harbor tracing its evolution into an international maritime gateway.",
+            searchKey = "芦潮港公园"
+        ),
+    )
+
     val themes: List<SpotTheme>
         get() = if (ThemeState.isEnglish) {
             listOf(
@@ -521,6 +757,12 @@ object CuratedSpots {
                     title = "Industry Trail",
                     subtitle = "20 industrial heritage sites—shipyards, mills, silos, mints, and steelworks along both rivers",
                     spots = INDUSTRY_EN
+                ),
+                SpotTheme(
+                    key = "lingang",
+                    title = "Lingang Tour",
+                    subtitle = "20 coastal landmarks—astronomy & maritime museums, Dishui Lake, campuses, and sponge wetlands",
+                    spots = LINGANG_EN
                 ),
             )
         } else {
@@ -537,6 +779,12 @@ object CuratedSpots {
                     subtitle = "20 处纯工业遗存：船厂、纱厂、筒仓、造币厂、糖厂与钢铁车间",
                     spots = INDUSTRY_ZH
                 ),
+                SpotTheme(
+                    key = "lingang",
+                    title = "临港之旅",
+                    subtitle = "20 处东海门户地标：天文航海馆、滴水湖、大学城科创校园与海绵湿地公园",
+                    spots = LINGANG_ZH
+                ),
             )
         }
 
@@ -546,7 +794,7 @@ object CuratedSpots {
     fun searchKeyFor(name: String): String? {
         val target = name.trim()
         if (target.isEmpty()) return null
-        val match = (POWER_EN + INDUSTRY_EN + POWER_ZH + INDUSTRY_ZH)
+        val match = (POWER_EN + INDUSTRY_EN + LINGANG_EN + POWER_ZH + INDUSTRY_ZH + LINGANG_ZH)
             .firstOrNull { it.name.equals(target, ignoreCase = true) }
         return match?.searchKey
     }

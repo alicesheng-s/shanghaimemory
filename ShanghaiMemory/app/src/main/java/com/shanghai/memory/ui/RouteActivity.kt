@@ -94,8 +94,9 @@ class RouteActivity : ThemedActivity() {
         binding.menuPreset.setOnClickListener { showPage(PAGE_PRESET) }
         binding.menuCustom.setOnClickListener { showPage(PAGE_CUSTOM) }
 
-        binding.themePower.setOnClickListener { openTheme(CuratedSpots.themes[0]) }
-        binding.themeIndustry.setOnClickListener { openTheme(CuratedSpots.themes[1]) }
+        binding.themePower.setOnClickListener { CuratedSpots.byKey("power")?.let { openTheme(it) } }
+        binding.themeIndustry.setOnClickListener { CuratedSpots.byKey("industry")?.let { openTheme(it) } }
+        binding.themeLingang.setOnClickListener { CuratedSpots.byKey("lingang")?.let { openTheme(it) } }
 
         binding.prefEvent.setOnClickListener { pickPreference(PREF_EVENT) }
         binding.prefHistory.setOnClickListener { pickPreference(PREF_HISTORY) }

@@ -97,11 +97,12 @@
     <string name="route_generate">排一条路线</string>
     <string name="route_preset_power">电力之旅</string>
     <string name="route_preset_industry">工业之旅</string>
+    <string name="route_preset_lingang">临港之旅</string>
     <string name="route_back">返回</string>
     <string name="route_pick_title">游览路线</string>
     <string name="route_menu_hint">选一种逛法：跟着我们精选好的主题线走，或者自己定个关键词让 AI 帮你搜罗。</string>
     <string name="route_menu_preset">精选主题路线</string>
-    <string name="route_menu_preset_desc">电力之旅、工业之旅两条主题线，各有 20 处有据可查的典型地标，想看哪几站自己挑。</string>
+    <string name="route_menu_preset_desc">电力之旅、工业之旅、临港之旅三条主题线，各有 20 处有据可查的典型地标，想看哪几站自己挑。</string>
     <string name="route_menu_custom">按兴趣自己找</string>
     <string name="route_menu_custom_desc">输入你想逛的关键词和偏好，先让 AI 联网找出真地方，再由你拍板定路线。</string>
     <string name="route_preset_hint">先挑一条感兴趣的主题线，下一页就能勾选想去的点位。</string>
@@ -110,6 +111,8 @@
     <string name="route_theme_power_desc">从 1882 年外滩的第一盏电灯、老变电站，走到远东第一火力发电厂与电力制造基地。</string>
     <string name="route_theme_industry">工业之旅</string>
     <string name="route_theme_industry_desc">船厂、纱厂、筒仓、造币厂、糖厂与钢铁车间，触摸黄浦江与苏州河的百年制造现场。</string>
+    <string name="route_theme_lingang">临港之旅</string>
+    <string name="route_theme_lingang_desc">上海天文馆、中国航海博物馆、滴水湖、大学城高校与东海门户公园，一天看遍临港新片区。</string>
     <string name="route_custom_title">按兴趣找地点</string>
     <string name="route_custom_hint">告诉我想探索什么主题，以及你更想看当下正在办的展览，还是原汁原味的老建筑。</string>
     <string name="route_custom_keywords">想逛什么关键词</string>
@@ -139,7 +142,7 @@
     <string name="route_custom_preset_saved">已保存到精选主题路线：%1$s</string>
     <string name="route_custom_preset_default_sub">自定义路线 · 共 %1$d 处地点</string>
     <string name="route_custom_preset_delete_title">删除自定义预设</string>
-    <string name="route_custom_preset_delete_msg">确定删除「%1$s」吗？内置的电力之旅和工业之旅不会受影响。</string>
+    <string name="route_custom_preset_delete_msg">确定删除「%1$s」吗？内置的电力、工业与临港之旅不会受影响。</string>
     <string name="route_custom_preset_delete">删除</string>
     <string name="route_save_preset_dialog_title">添加到预设路线</string>
     <string name="route_save_preset_selected_hint">将保存你已勾选的 %1$d 处地点。</string>
@@ -293,7 +296,7 @@
     <string name="onb_p1_c2_title">先联网查证，再开口讲述</string>
     <string name="onb_p1_3">并行检索公开史料与官方公众号近期活动；未查实细节直说「此事待考」，绝不瞎编。</string>
     <string name="onb_p1_c3_title">自定义排线 + 离线著名地标</string>
-    <string name="onb_p1_2">电力/工业专题或按兴趣自选站点排成步行路线，侧栏还内置 12 处上海经典地标离线随看。</string>
+    <string name="onb_p1_2">电力/工业/临港专题或按兴趣自选站点排成步行路线，侧栏还内置 12 处上海经典地标离线随看。</string>
     <string name="onb_p1_badge">无账号 · 密钥仅存本机 · 没网也能读离线地标与底稿</string>
 
     <string name="onb_p2_title">配一把自己的大模型钥匙</string>

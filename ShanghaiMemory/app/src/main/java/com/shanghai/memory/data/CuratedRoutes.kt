@@ -240,7 +240,112 @@ object CuratedRoutes {
         totalMin = 280
     )
 
+    private val lingangTrailZh = RoutePlan(
+        routeName = "临港之旅：从滴水湖星海到东海门户",
+        theme = "天文、航海、电力高校与围垦滩涂上生长出的未来之城",
+        stops = listOf(
+            RouteStop(
+                seq = 1,
+                name = "中国航海博物馆",
+                area = "浦东新区",
+                stayMin = 45,
+                reason = "国家级航海主题殿堂，双白帆大厅里收藏了中国古代造船与远洋航行史。",
+                storyHook = "走进双帆大厅前先抬头看：远洋船锚正迎着东海吹来的湿润海风。"
+            ),
+            RouteStop(
+                seq = 2,
+                name = "上海电力大学（临港校区）",
+                area = "浦东新区",
+                stayMin = 30,
+                reason = "建有新能源微电网与智能电网实验平台，衔接杨浦老校区向未来电网延伸。",
+                storyHook = "在靠近海风的校园里，风电、光伏与微电网正变成每天的实验课日常。",
+                searchKey = "上海电力大学(临港校区)"
+            ),
+            RouteStop(
+                seq = 3,
+                name = "朵云书院·滴水湖店",
+                area = "浦东新区",
+                stayMin = 35,
+                reason = "临湖 20 米玻璃幕墙书房，把滴水湖开阔水面装进整片城市阅读视野。",
+                storyHook = "在临港圆心旁落座一会，抬头就能看见直径 2.6 公里的整片人工湖光。",
+                searchKey = "朵云书院(滴水湖店)"
+            ),
+            RouteStop(
+                seq = 4,
+                name = "上海天文馆",
+                area = "浦东新区",
+                stayMin = 60,
+                reason = "全球建筑规模最大的天文馆，无直角圆洞天窗让建筑本身化身日晷与天象仪。",
+                storyHook = "穿过圆洞天窗洒在地上的光斑每小时都在移动，提醒你脚下地球正在自转。"
+            ),
+            RouteStop(
+                seq = 5,
+                name = "南汇嘴观海公园",
+                area = "浦东新区",
+                stayMin = 30,
+                reason = "上海陆域最东南端的填海海岸，不锈钢「司南鱼」雕塑面向长江口与东海。",
+                storyHook = "站上世纪塘大堤：背后是滴水湖新城，面前是上海与东海交接的第一道海平线。"
+            )
+        ),
+        transitionLogic = "申港大道中国航海博物馆出发，串联沪城环路电力大学临港校区、滴水湖畔朵云书院与临港大道上海天文馆，傍晚抵南汇嘴观海公园收尾。",
+        totalMin = 240
+    )
+
+    private val lingangTrailEn = RoutePlan(
+        routeName = "Lingang Tour: From Dishui Lake to the East China Sea",
+        theme = "Maritime heritage, power campuses, sponge parks, and astronomical architecture on reclaimed coast",
+        stops = listOf(
+            RouteStop(
+                seq = 1,
+                name = "China Maritime Museum",
+                area = "Pudong",
+                stayMin = 45,
+                reason = "China's first national maritime museum with twin white-sail canopies and classic ship models.",
+                storyHook = "Pause beneath the curved white sails before stepping inside a thousand years of sea charts.",
+                searchKey = "中国航海博物馆"
+            ),
+            RouteStop(
+                seq = 2,
+                name = "Shanghai University of Electric Power (Lingang Campus)",
+                area = "Pudong",
+                stayMin = 30,
+                reason = "Features microgrid and clean-energy labs bridging classic Pingliang grid engineering with coastal renewables.",
+                storyHook = "Along this breezy coastal avenue, wind, solar, and smart grids move straight from lab to life.",
+                searchKey = "上海电力大学(临港校区)"
+            ),
+            RouteStop(
+                seq = 3,
+                name = "Duoyun Books · Dishui Lake",
+                area = "Pudong",
+                stayMin = 35,
+                reason = "Lakefront study wrapped in 20-meter glass windows facing the 2.6-kilometer circular Dishui Lake.",
+                storyHook = "Look up from your page and the entire geometric harbor of Lingang spreads across the glass.",
+                searchKey = "朵云书院(滴水湖店)"
+            ),
+            RouteStop(
+                seq = 4,
+                name = "Shanghai Astronomy Museum",
+                area = "Pudong",
+                stayMin = 60,
+                reason = "World's largest planetarium by floor area, sculpted without straight walls as an architectural sundial.",
+                storyHook = "Follow the sunlight disc gliding through the roof oculus—tracking Earth's rotation in real time.",
+                searchKey = "上海天文馆"
+            ),
+            RouteStop(
+                seq = 5,
+                name = "Nanhuizui Seaview Park",
+                area = "Pudong",
+                stayMin = 30,
+                reason = "Shanghai's southeasternmost reclaimed coastal cape anchored by the steel Sinan Fish monument.",
+                storyHook = "Stand on the seawall: Dishui Lake lies behind you while the East China Sea opens straight ahead.",
+                searchKey = "南汇嘴观海公园"
+            )
+        ),
+        transitionLogic = "Begin at China Maritime Museum, pass SUEP Lingang Campus toward Dishui Lake's Duoyun Books and Shanghai Astronomy Museum, then finish at Nanhuizui Seaview Park.",
+        totalMin = 240
+    )
+
     fun presets(): List<RoutePlan> =
-        if (ThemeState.isEnglish) listOf(powerTrailEn, industryTrailEn)
-        else listOf(powerTrailZh, industryTrailZh)
+        if (ThemeState.isEnglish) listOf(powerTrailEn, industryTrailEn, lingangTrailEn)
+        else listOf(powerTrailZh, industryTrailZh, lingangTrailZh)
 }

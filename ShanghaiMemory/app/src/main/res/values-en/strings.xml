@@ -97,11 +97,12 @@
     <string name="route_generate">Build Route</string>
     <string name="route_preset_power">Power Trail</string>
     <string name="route_preset_industry">Industry Trail</string>
+    <string name="route_preset_lingang">Lingang Tour</string>
     <string name="route_back">Back</string>
     <string name="route_pick_title">Tour Routes</string>
     <string name="route_menu_hint">Pick a curated trail to customize, or enter keywords and let AI scout real places for you.</string>
     <string name="route_menu_preset">Curated Trails</string>
-    <string name="route_menu_preset_desc">Power Trail and Industry Trail—each with 20 verified heritage stops you can mix and match.</string>
+    <string name="route_menu_preset_desc">Power Trail, Industry Trail, and Lingang Tour—each with 20 verified stops you can mix and match.</string>
     <string name="route_menu_custom">Explore by Interest</string>
     <string name="route_menu_custom_desc">Enter keywords and preferences. AI finds real spots on the map, and you decide which ones to visit.</string>
     <string name="route_preset_hint">Pick a theme below to browse and select stops on the next page.</string>
@@ -110,6 +111,8 @@
     <string name="route_theme_power_desc">From 1882 Bund arc lamps and historic substations to major powerhouses and turbine works.</string>
     <string name="route_theme_industry">Industry Trail</string>
     <string name="route_theme_industry_desc">Shipyards, cotton mills, silos, mints, refineries, and steelworks along both rivers.</string>
+    <string name="route_theme_lingang">Lingang Tour</string>
+    <string name="route_theme_lingang_desc">Astronomy &amp; maritime museums, Dishui Lake, university campuses, and East China Sea coastal parks.</string>
     <string name="route_custom_title">Explore by Interest</string>
     <string name="route_custom_hint">Tell us what theme excites you and whether you prefer live exhibitions or historic architecture.</string>
     <string name="route_custom_keywords">Keywords</string>
@@ -139,7 +142,7 @@
     <string name="route_custom_preset_saved">Saved to Curated Trails: %1$s</string>
     <string name="route_custom_preset_default_sub">Custom trail · %1$d stops</string>
     <string name="route_custom_preset_delete_title">Delete Custom Trail</string>
-    <string name="route_custom_preset_delete_msg">Remove \"%1$s\"? Built-in Power and Industry trails remain untouched.</string>
+    <string name="route_custom_preset_delete_msg">Remove \"%1$s\"? Built-in Power, Industry, and Lingang trails remain untouched.</string>
     <string name="route_custom_preset_delete">Delete</string>
     <string name="route_save_preset_dialog_title">Save to Curated Trails</string>
     <string name="route_save_preset_selected_hint">Saves the %1$d stops you selected.</string>
@@ -293,7 +296,7 @@
     <string name="onb_p1_c2_title">Verify archives before telling</string>
     <string name="onb_p1_3">Searches public records and official updates in parallel; gaps are marked "To be verified", never fabricated.</string>
     <string name="onb_p1_c3_title">Custom walks &amp; 12 offline landmarks</string>
-    <string name="onb_p1_2">Curate walking routes by theme or interest, plus 12 classic Shanghai landmarks readable anytime offline.</string>
+    <string name="onb_p1_2">Curate walking routes by Power, Industry, Lingang, or your own keywords, plus 12 landmarks offline.</string>
     <string name="onb_p1_badge">No account · Local-only API keys · Works offline with curated guides</string>
 
     <string name="onb_p2_title">Bring your own AI key</string>
