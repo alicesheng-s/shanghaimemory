@@ -137,11 +137,14 @@ class SearchClient(private val http: OkHttpClient = Http.quickClient) {
             put("query", query.take(128))
             put("count", count)
         }
-        val request = Request.Builder()
-            .url(settings.customSearchUrl)
-            .addHeader("Authorization", "Bearer ${settings.apiKey}")
+        val builder = Request.Builder()
+            .url(settings.customSearchUrl.trim())
             .post(payload.toString().toRequestBody(JSON_MEDIA))
-            .build()
+        val token = settings.customSearchKey.ifBlank { settings.apiKey }.trim()
+        if (token.isNotBlank()) {
+            builder.addHeader("Authorization", "Bearer $token")
+        }
+        val request = builder.build()
 
         http.newCall(request).execute().use { resp ->
             val text = resp.body?.string().orEmpty()

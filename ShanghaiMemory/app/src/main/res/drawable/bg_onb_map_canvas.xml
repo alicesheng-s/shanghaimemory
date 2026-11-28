@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="190dp"
+    android:viewportWidth="320"
+    android:viewportHeight="190">
+    <!-- subtle map road grid lines -->
+    <path
+        android:strokeColor="#22888888"
+        android:strokeWidth="1"
+        android:pathData="M0,38 L320,38 M0,76 L320,76 M0,114 L320,114 M0,152 L320,152 M64,0 L64,190 M128,0 L128,190 M192,0 L192,190 M256,0 L256,190" />
+    <!-- diagonal avenue -->
+    <path
+        android:strokeColor="#30888888"
+        android:strokeWidth="2.5"
+        android:pathData="M18,165 L230,22" />
+    <!-- stylized Huangpu River curve -->
+    <path
+        android:strokeColor="#444A90D9"
+        android:strokeWidth="18"
+        android:strokeLineCap="round"
+        android:pathData="M240,198 C236,138 258,105 292,72 C310,55 322,38 332,12" />
+    <path
+        android:strokeColor="#284A90D9"
+        android:strokeWidth="26"
+        android:strokeLineCap="round"
+        android:pathData="M240,198 C236,138 258,105 292,72 C310,55 322,38 332,12" />
+</vector>

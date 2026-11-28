@@ -1,39 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="?attr/shBg">
+    android:background="?attr/shBg"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingStart="20dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="8dp">
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp">
 
         <TextView
             android:id="@+id/txt_onb_step"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="11sp"
             android:letterSpacing="0.18"
+            android:text="1 / 5"
             android:textColor="?attr/shTextMuted"
-            android:text="1 / 5" />
+            android:textSize="11.5sp" />
 
         <TextView
             android:id="@+id/btn_skip"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
+            android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:text="@string/onb_skip"
-            android:textSize="13sp"
-            android:textColor="?attr/shTextMuted" />
+            android:textColor="?attr/shTextMuted"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <FrameLayout
@@ -42,6 +44,7 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <!-- 第 1 页：视觉总览 -->
         <ScrollView
             android:id="@+id/page1"
             android:layout_width="match_parent"
@@ -52,53 +55,193 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
 
-                <TextView
-                    style="@style/Text.Section"
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/settings_menu_onboarding" />
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
 
-                <TextView
+                    <ImageView
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_launcher_foreground" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            style="@style/Text.Section"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/app_name" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:lineSpacingMultiplier="1.25"
+                            android:text="@string/onb_p1_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="19sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_spot_add"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/shAccent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/onb_p1_c1_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:lineSpacingMultiplier="1.4"
+                            android:text="@string/onb_p1_1"
+                            android:textColor="?attr/shTextMuted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:text="@string/onb_p1_title"
-                    android:textSize="26sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.3"
-                    android:textColor="?attr/shText" />
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
 
-                <TextView
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_spot_add"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_chat"
+                        app:tint="?attr/shAccent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/onb_p1_c2_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:lineSpacingMultiplier="1.4"
+                            android:text="@string/onb_p1_3"
+                            android:textColor="?attr/shTextMuted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
-                    android:text="@string/onb_p1_1"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_card"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="14dp">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:background="@drawable/bg_spot_add"
+                        android:contentDescription="@null"
+                        android:padding="7dp"
+                        android:src="@drawable/ic_route"
+                        app:tint="?attr/shAccent" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/onb_p1_c3_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:lineSpacingMultiplier="1.4"
+                            android:text="@string/onb_p1_2"
+                            android:textColor="?attr/shTextMuted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    android:text="@string/onb_p1_2"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
-                    android:text="@string/onb_p1_3"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shAccent" />
+                    android:background="@drawable/bg_pill"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text="@string/onb_p1_badge"
+                    android:textColor="?attr/shAccent"
+                    android:textSize="12.5sp" />
             </LinearLayout>
         </ScrollView>
 
+        <!-- 第 2 页：选择服务商与配置 Key -->
         <ScrollView
             android:id="@+id/page2"
             android:layout_width="match_parent"
@@ -110,62 +253,184 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_key"
+                        app:tint="?attr/shAccent" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:text="@string/onb_p2_title"
+                        android:textColor="?attr/shText"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/onb_p2_title"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.3"
-                    android:textColor="?attr/shText" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="10dp"
+                    android:lineSpacingMultiplier="1.45"
                     android:text="@string/onb_p2_lead"
-                    android:textSize="14sp"
-                    android:lineSpacingMultiplier="1.55"
-                    android:textColor="?attr/shTextMuted" />
-
-                <EditText
-                    android:id="@+id/et_key"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="22dp"
-                    android:background="@drawable/bg_card"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:hint="@string/onb_p2_hint"
-                    android:textSize="14sp"
-                    android:inputType="textVisiblePassword"
-                    android:importantForAutofill="no"
-                    android:maxLines="1"
-                    android:textColor="?attr/shText"
-                    android:textColorHint="?attr/shTextMuted" />
+                    android:textColor="?attr/shTextMuted"
+                    android:textSize="13.5sp" />
 
                 <TextView
+                    style="@style/Text.Muted"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/onb_p2_help"
-                    android:textSize="12sp"
-                    android:lineSpacingMultiplier="1.5"
-                    android:textColor="?attr/shTextMuted" />
+                    android:layout_marginTop="16dp"
+                    android:text="@string/settings_provider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/prov_deepseek"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="DeepSeek"
+                        android:textColor="?attr/shText"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:id="@+id/prov_zhipu"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="@string/onb_p2_prov_zhipu"
+                        android:textColor="?attr/shText"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:id="@+id/prov_kimi"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="Kimi"
+                        android:textColor="?attr/shText"
+                        android:textSize="12.5sp" />
+
+                    <TextView
+                        android:id="@+id/prov_custom"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="@string/onb_p2_prov_custom"
+                        android:textColor="?attr/shText"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/txt_prov_capability"
+                    style="@style/Text.Muted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textSize="12.5sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/et_key"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:hint="@string/onb_p2_hint"
+                        android:importantForAutofill="no"
+                        android:inputType="textVisiblePassword"
+                        android:maxLines="1"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
+                        android:textColor="?attr/shText"
+                        android:textColorHint="?attr/shTextMuted"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_onb_test_key"
+                        style="@style/Button.Ghost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="50dp"
+                        android:layout_marginStart="8dp"
+                        android:minWidth="0dp"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:text="@string/onb_p2_test"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/txt_key_state"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="10dp"
+                    android:textColor="?attr/shOk"
                     android:textSize="13sp"
-                    android:visibility="gone"
-                    android:textColor="?attr/shOk" />
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="13dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/onb_p2_offline_title"
+                        android:textColor="?attr/shText"
+                        android:textSize="13.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:lineSpacingMultiplier="1.45"
+                        android:text="@string/onb_p2_help"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
 
+        <!-- 第 3 页：即时换装卡片预览 -->
         <ScrollView
             android:id="@+id/page3"
             android:layout_width="match_parent"
@@ -177,120 +442,120 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:lineSpacingMultiplier="1.25"
                     android:text="@string/onb_p3_title"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.3"
-                    android:textColor="?attr/shText" />
+                    android:textColor="?attr/shText"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.45"
                     android:text="@string/onb_p3_lead"
-                    android:textSize="13sp"
-                    android:lineSpacingMultiplier="1.55"
-                    android:textColor="?attr/shTextMuted" />
+                    android:textColor="?attr/shTextMuted"
+                    android:textSize="13sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="14dp"
                     android:orientation="horizontal">
 
                     <LinearLayout
                         android:id="@+id/pick_ink_gold"
                         android:layout_width="0dp"
-                        android:layout_height="86dp"
+                        android:layout_height="76dp"
                         android:layout_weight="1"
-                        android:orientation="vertical"
+                        android:background="@drawable/bg_card"
                         android:gravity="center"
-                        android:background="@drawable/bg_card">
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:tag="sh:keep_color"
                             android:text="&#9679;"
-                            android:textSize="20sp"
-                            android:textColor="@color/amber" />
+                            android:textColor="@color/amber"
+                            android:textSize="20sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="@string/onb_p3_ink_gold"
-                            android:textSize="12sp"
-                            android:textColor="?attr/shText" />
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/pick_sakura"
                         android:layout_width="0dp"
-                        android:layout_height="86dp"
-                        android:layout_weight="1"
+                        android:layout_height="76dp"
                         android:layout_marginStart="10dp"
-                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
                         android:gravity="center"
-                        android:background="@drawable/bg_card">
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:tag="sh:keep_color"
                             android:text="&#9679;"
-                            android:textSize="20sp"
-                            android:textColor="@color/sakura_accent" />
+                            android:textColor="@color/sakura_accent"
+                            android:textSize="20sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="@string/onb_p3_sakura"
-                            android:textSize="12sp"
-                            android:textColor="?attr/shText" />
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <LinearLayout
                         android:id="@+id/pick_celadon"
                         android:layout_width="0dp"
-                        android:layout_height="86dp"
-                        android:layout_weight="1"
+                        android:layout_height="76dp"
                         android:layout_marginStart="10dp"
-                        android:orientation="vertical"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
                         android:gravity="center"
-                        android:background="@drawable/bg_card">
+                        android:orientation="vertical">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:tag="sh:keep_color"
                             android:text="&#9679;"
-                            android:textSize="20sp"
-                            android:textColor="@color/celadon_accent" />
+                            android:textColor="@color/celadon_accent"
+                            android:textSize="20sp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="@string/onb_p3_celadon"
-                            android:textSize="12sp"
-                            android:textColor="?attr/shText" />
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
                     </LinearLayout>
                 </LinearLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/onb_p3_light"
-                    android:textSize="13sp"
-                    android:textColor="?attr/shTextMuted" />
+                    android:textColor="?attr/shTextMuted"
+                    android:textSize="12.5sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -303,52 +568,108 @@
                         android:layout_width="0dp"
                         android:layout_height="40dp"
                         android:layout_weight="1"
-                        android:gravity="center"
                         android:background="@drawable/bg_card"
+                        android:gravity="center"
                         android:text="@string/light_follow"
-                        android:textSize="13sp"
-                        android:textColor="?attr/shText" />
+                        android:textColor="?attr/shText"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/light_on"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:gravity="center"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_card"
+                        android:gravity="center"
                         android:text="@string/light_on"
-                        android:textSize="13sp"
-                        android:textColor="?attr/shText" />
+                        android:textColor="?attr/shText"
+                        android:textSize="13sp" />
 
                     <TextView
                         android:id="@+id/light_off"
                         android:layout_width="0dp"
                         android:layout_height="40dp"
-                        android:layout_weight="1"
                         android:layout_marginStart="8dp"
-                        android:gravity="center"
+                        android:layout_weight="1"
                         android:background="@drawable/bg_card"
+                        android:gravity="center"
                         android:text="@string/light_off"
-                        android:textSize="13sp"
-                        android:textColor="?attr/shText" />
+                        android:textColor="?attr/shText"
+                        android:textSize="13sp" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/txt_onb_preview"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
+                    android:layout_marginTop="16dp"
                     android:background="@drawable/bg_card"
-                    android:padding="14dp"
-                    android:text="@string/onb_p3_preview"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:tag="sh:prose"
-                    android:textColor="?attr/shText" />
+                    android:orientation="vertical"
+                    android:padding="15dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/cursor_pin" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:text="@string/onb_p3_mock_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/txt_onb_preview_tag"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill"
+                            android:paddingStart="8dp"
+                            android:paddingTop="3dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="3dp"
+                            android:text="1913"
+                            android:textColor="?attr/shAccent"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_onb_preview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:lineSpacingMultiplier="1.5"
+                        android:tag="sh:prose"
+                        android:text="@string/onb_p3_preview"
+                        android:textColor="?attr/shText"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/btn_onb_preview_cta"
+                        android:layout_width="match_parent"
+                        android:layout_height="38dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_spot_add"
+                        android:gravity="center"
+                        android:text="@string/map_learn_more"
+                        android:textColor="?attr/shBg"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
 
+        <!-- 第 4 页：交互式微缩地图演示 -->
         <ScrollView
             android:id="@+id/page4"
             android:layout_width="match_parent"
@@ -360,66 +681,249 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:lineSpacingMultiplier="1.25"
                     android:text="@string/onb_p4_title"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.3"
-                    android:textColor="?attr/shText" />
+                    android:textColor="?attr/shText"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/onb_p4_1"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
+                    android:layout_marginTop="6dp"
+                    android:text="@string/onb_p4_sub"
+                    android:textColor="?attr/shTextMuted"
+                    android:textSize="13sp" />
 
-                <TextView
+                <FrameLayout
+                    android:id="@+id/onb_map_stage"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="204dp"
                     android:layout_marginTop="12dp"
-                    android:text="@string/onb_p4_2"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/onb_p4_3"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="@string/onb_p4_4"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
                     android:background="@drawable/bg_card"
-                    android:padding="13dp"
-                    android:text="@string/onb_p4_note"
-                    android:textSize="12.5sp"
-                    android:lineSpacingMultiplier="1.5"
-                    android:textColor="?attr/shTextMuted" />
+                    android:clipChildren="true"
+                    android:clipToPadding="true">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@null"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/bg_onb_map_canvas" />
+
+                    <TextView
+                        android:id="@+id/pin_heritage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start|top"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="24dp"
+                        android:background="@drawable/bg_pill"
+                        android:paddingStart="10dp"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/onb_p4_pin_heritage"
+                        android:textColor="?attr/shText"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/pin_subspot"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal|bottom"
+                        android:layout_marginBottom="22dp"
+                        android:background="@drawable/bg_pill"
+                        android:paddingStart="10dp"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/onb_p4_pin_subspot"
+                        android:textColor="?attr/shText"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/pin_shop"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginEnd="14dp"
+                        android:background="@drawable/bg_pill"
+                        android:paddingStart="10dp"
+                        android:paddingTop="6dp"
+                        android:paddingEnd="10dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/onb_p4_pin_shop"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:id="@+id/btn_onb_nav_demo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end|top"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:background="@drawable/bg_pill"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingStart="8dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="9dp"
+                        android:paddingBottom="5dp">
+
+                        <ImageView
+                            android:id="@+id/img_onb_compass"
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/ic_nav"
+                            app:tint="?attr/shAccent" />
+
+                        <TextView
+                            android:id="@+id/txt_onb_nav_demo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="5dp"
+                            android:text="@string/onb_p4_nav_off"
+                            android:textColor="?attr/shTextMuted"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/onb_crosshair"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@null"
+                        android:src="@drawable/cursor_pin" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/onb_sim_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/txt_sim_title"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/onb_p4_sim_heritage_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15.5sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/txt_sim_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill"
+                            android:paddingStart="8dp"
+                            android:paddingTop="3dp"
+                            android:paddingEnd="8dp"
+                            android:paddingBottom="3dp"
+                            android:text="@string/onb_p4_sim_heritage_badge"
+                            android:textColor="?attr/shAccent"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/txt_sim_desc"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:lineSpacingMultiplier="1.45"
+                        android:text="@string/onb_p4_sim_heritage_desc"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:id="@+id/row_story_parts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill"
+                            android:gravity="center"
+                            android:paddingTop="5dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/onb_p4_part1"
+                            android:textColor="?attr/shText"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill"
+                            android:gravity="center"
+                            android:paddingTop="5dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/onb_p4_part2"
+                            android:textColor="?attr/shText"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill"
+                            android:gravity="center"
+                            android:paddingTop="5dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/onb_p4_part3"
+                            android:textColor="?attr/shText"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill"
+                            android:gravity="center"
+                            android:paddingTop="5dp"
+                            android:paddingBottom="5dp"
+                            android:text="@string/onb_p4_part4"
+                            android:textColor="?attr/shText"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/onb_p4_tip"
+                    android:textColor="?attr/shTextMuted"
+                    android:textSize="12sp" />
             </LinearLayout>
         </ScrollView>
 
+        <!-- 第 5 页：游览路线流程与离线著名地标 -->
         <ScrollView
             android:id="@+id/page5"
             android:layout_width="match_parent"
@@ -431,63 +935,335 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="22dp">
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:lineSpacingMultiplier="1.25"
                     android:text="@string/onb_p5_title"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:lineSpacingMultiplier="1.3"
-                    android:textColor="?attr/shText" />
+                    android:textColor="?attr/shText"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="@string/onb_p5_1"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
-
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="@string/onb_p5_2"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
+                    android:orientation="horizontal">
 
-                <TextView
+                    <TextView
+                        android:id="@+id/tab_onb_route"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="@string/drawer_route"
+                        android:textColor="?attr/shText"
+                        android:textSize="13.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tab_onb_famous"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_card"
+                        android:gravity="center"
+                        android:text="@string/drawer_famous"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="13.5sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/panel_onb_route"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="@string/onb_p5_3"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
+                    android:orientation="vertical">
 
-                <TextView
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:gravity="center"
+                            android:padding="10dp"
+                            android:text="@string/onb_p5_step1"
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:text="→"
+                            android:textColor="?attr/shAccent"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:gravity="center"
+                            android:padding="10dp"
+                            android:text="@string/onb_p5_step2"
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="6dp"
+                            android:paddingEnd="6dp"
+                            android:text="→"
+                            android:textColor="?attr/shAccent"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:gravity="center"
+                            android:padding="10dp"
+                            android:text="@string/onb_p5_step3"
+                            android:textColor="?attr/shText"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_card"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/demo_stop_1"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_pill"
+                                android:gravity="center"
+                                android:paddingTop="7dp"
+                                android:paddingBottom="7dp"
+                                android:text="@string/onb_p5_s1_label"
+                                android:textColor="?attr/shText"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/demo_stop_2"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_pill"
+                                android:gravity="center"
+                                android:paddingTop="7dp"
+                                android:paddingBottom="7dp"
+                                android:text="@string/onb_p5_s2_label"
+                                android:textColor="?attr/shText"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/demo_stop_3"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/bg_pill"
+                                android:gravity="center"
+                                android:paddingTop="7dp"
+                                android:paddingBottom="7dp"
+                                android:text="@string/onb_p5_s3_label"
+                                android:textColor="?attr/shText"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/txt_demo_stop_detail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:lineSpacingMultiplier="1.45"
+                            android:text="@string/onb_p5_s1_detail"
+                            android:textColor="?attr/shTextMuted"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_card"
+                        android:lineSpacingMultiplier="1.45"
+                        android:padding="12dp"
+                        android:text="@string/onb_p5_note"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/panel_onb_famous"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:text="@string/onb_p5_4"
-                    android:textSize="15sp"
-                    android:lineSpacingMultiplier="1.6"
-                    android:textColor="?attr/shText" />
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:background="@drawable/bg_card"
-                    android:padding="13dp"
-                    android:text="@string/onb_p5_note"
-                    android:textSize="12.5sp"
-                    android:lineSpacingMultiplier="1.5"
-                    android:textColor="?attr/shTextMuted" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:lineSpacingMultiplier="1.45"
+                        android:text="@string/onb_p5_famous_lead"
+                        android:textColor="?attr/shTextMuted"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/onb_p5_f1_name"
+                                android:textColor="?attr/shText"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/onb_p5_f1_desc"
+                                android:textColor="?attr/shTextMuted"
+                                android:textSize="11.5sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/onb_p5_f2_name"
+                                android:textColor="?attr/shText"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/onb_p5_f2_desc"
+                                android:textColor="?attr/shTextMuted"
+                                android:textSize="11.5sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/onb_p5_f3_name"
+                                android:textColor="?attr/shText"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/onb_p5_f3_desc"
+                                android:textColor="?attr/shTextMuted"
+                                android:textSize="11.5sp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_card"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/onb_p5_f4_name"
+                                android:textColor="?attr/shText"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="@string/onb_p5_f4_desc"
+                                android:textColor="?attr/shTextMuted"
+                                android:textSize="11.5sp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_pill"
+                        android:gravity="center"
+                        android:padding="9dp"
+                        android:text="@string/onb_p5_famous_entry"
+                        android:textColor="?attr/shAccent"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
     </FrameLayout>
@@ -495,8 +1271,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
+        android:orientation="horizontal"
         android:paddingTop="6dp"
         android:paddingBottom="10dp">
 
@@ -535,14 +1311,32 @@
             android:background="@drawable/bg_spot_add" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btn_next"
-        style="@style/Button.Amber"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="52dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="20dp"
-        android:text="@string/onb_next"
-        android:textSize="15sp" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_prev"
+            style="@style/Button.Ghost"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginEnd="10dp"
+            android:layout_weight="1"
+            android:text="@string/onb_prev"
+            android:textSize="14.5sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_next"
+            style="@style/Button.Amber"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="2"
+            android:text="@string/onb_next"
+            android:textSize="15sp" />
+    </LinearLayout>
 </LinearLayout>

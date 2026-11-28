@@ -20,6 +20,7 @@ data class AppSettings(
     val baseUrl: String = Providers.DEEPSEEK.chatBaseUrl,
     val webSearchEnabled: Boolean = true,
     val customSearchUrl: String = "",
+    val customSearchKey: String = "",
     val temperature: Float = 0.7f,
     val paletteId: String = "ink_gold",
     val ttsEnabled: Boolean = false,
@@ -54,6 +55,18 @@ data class AppSettings(
         get() = webSearchEnabled && (provider.hasWebSearch || customSearchUrl.isNotBlank())
 }
 
+data class ModelPreset(
+    val id: String,
+    val name: String,
+    val providerId: String,
+    val apiKey: String,
+    val model: String,
+    val baseUrl: String,
+    val webSearchEnabled: Boolean = true,
+    val customSearchUrl: String = "",
+    val customSearchKey: String = ""
+)
+
 private val Context.settingsDataStore by preferencesDataStore(name = "shanghai_memory_settings")
 
 class SettingsStore(private val context: Context) {
@@ -65,6 +78,8 @@ class SettingsStore(private val context: Context) {
         val baseUrl = stringPreferencesKey("base_url")
         val webSearch = booleanPreferencesKey("web_search_enabled")
         val customSearchUrl = stringPreferencesKey("custom_search_url")
+        val customSearchKey = stringPreferencesKey("custom_search_key")
+        val modelPresets = stringPreferencesKey("model_presets_json")
         val temperature = stringPreferencesKey("temperature")
         val paletteId = stringPreferencesKey("palette_id")
         val ttsEnabled = booleanPreferencesKey("tts_enabled")
@@ -99,6 +114,7 @@ class SettingsStore(private val context: Context) {
             baseUrl = p[Key.baseUrl] ?: preset.chatBaseUrl,
             webSearchEnabled = p[Key.webSearch] ?: true,
             customSearchUrl = p[Key.customSearchUrl].orEmpty(),
+            customSearchKey = p[Key.customSearchKey].orEmpty(),
             temperature = p[Key.temperature]?.toFloatOrNull() ?: 0.7f,
             paletteId = p[Key.paletteId] ?: "ink_gold",
             ttsEnabled = p[Key.ttsEnabled] ?: false,
@@ -152,6 +168,98 @@ class SettingsStore(private val context: Context) {
 
     suspend fun setCustomSearchUrl(value: String) {
         context.settingsDataStore.edit { it[Key.customSearchUrl] = value.trim() }
+    }
+
+    suspend fun setCustomSearchKey(value: String) {
+        context.settingsDataStore.edit { it[Key.customSearchKey] = value.trim() }
+    }
+
+    suspend fun applyModelPreset(preset: ModelPreset) {
+        context.settingsDataStore.edit { p ->
+            p[Key.providerId] = Providers.byId(preset.providerId).id
+            p[Key.apiKey] = preset.apiKey.trim()
+            p[Key.model] = preset.model.trim()
+            p[Key.baseUrl] = preset.baseUrl.trim()
+            p[Key.webSearch] = preset.webSearchEnabled
+            p[Key.customSearchUrl] = preset.customSearchUrl.trim()
+            p[Key.customSearchKey] = preset.customSearchKey.trim()
+        }
+    }
+
+    suspend fun getModelPresets(): List<ModelPreset> {
+        val raw = context.settingsDataStore.data.first()[Key.modelPresets].orEmpty()
+        return decodeModelPresets(raw)
+    }
+
+    suspend fun saveModelPreset(preset: ModelPreset): List<ModelPreset> {
+        var result: List<ModelPreset> = emptyList()
+        context.settingsDataStore.edit { p ->
+            val current = decodeModelPresets(p[Key.modelPresets].orEmpty()).toMutableList()
+            val idx = current.indexOfFirst { it.id == preset.id || it.name.equals(preset.name, ignoreCase = true) }
+            if (idx >= 0) {
+                current[idx] = preset.copy(id = current[idx].id)
+            } else {
+                current.add(0, preset)
+            }
+            p[Key.modelPresets] = encodeModelPresets(current)
+            result = current
+        }
+        return result
+    }
+
+    suspend fun deleteModelPreset(id: String): List<ModelPreset> {
+        var result: List<ModelPreset> = emptyList()
+        context.settingsDataStore.edit { p ->
+            val updated = decodeModelPresets(p[Key.modelPresets].orEmpty()).filterNot { it.id == id }
+            p[Key.modelPresets] = encodeModelPresets(updated)
+            result = updated
+        }
+        return result
+    }
+
+    private fun decodeModelPresets(raw: String): List<ModelPreset> {
+        if (raw.isBlank()) return emptyList()
+        return runCatching {
+            val arr = JSONArray(raw)
+            (0 until arr.length()).mapNotNull { i ->
+                val o = arr.optJSONObject(i) ?: return@mapNotNull null
+                val id = o.text("id").trim()
+                val name = o.text("name").trim()
+                val model = o.text("model").trim()
+                if (id.isEmpty() || name.isEmpty()) return@mapNotNull null
+                ModelPreset(
+                    id = id,
+                    name = name,
+                    providerId = o.text("providerId").trim().ifBlank { Providers.DEEPSEEK.id },
+                    apiKey = o.text("apiKey"),
+                    model = model,
+                    baseUrl = o.text("baseUrl").trim(),
+                    webSearchEnabled = o.optBoolean("webSearchEnabled", true),
+                    customSearchUrl = o.text("customSearchUrl").trim(),
+                    customSearchKey = o.text("customSearchKey").trim()
+                )
+            }
+        }.getOrDefault(emptyList())
+    }
+
+    private fun encodeModelPresets(list: List<ModelPreset>): String {
+        val arr = JSONArray()
+        list.forEach { p ->
+            arr.put(
+                JSONObject().apply {
+                    put("id", p.id)
+                    put("name", p.name)
+                    put("providerId", p.providerId)
+                    put("apiKey", p.apiKey)
+                    put("model", p.model)
+                    put("baseUrl", p.baseUrl)
+                    put("webSearchEnabled", p.webSearchEnabled)
+                    put("customSearchUrl", p.customSearchUrl)
+                    put("customSearchKey", p.customSearchKey)
+                }
+            )
+        }
+        return arr.toString()
     }
 
     suspend fun setTemperature(value: Float) {

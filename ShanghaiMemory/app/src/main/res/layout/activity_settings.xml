@@ -730,12 +730,69 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
                         android:text="@string/settings_section_model" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_card"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_presets_title"
+                            android:textColor="?attr/shText"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/txt_preset_hint"
+                            style="@style/Text.Muted"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/settings_presets_desc" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_preset_switch"
+                                style="@style/Button.Ghost"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_weight="1"
+                                android:minWidth="0dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:text="@string/settings_presets_switch"
+                                android:textSize="13sp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_preset_save"
+                                style="@style/Button.Ghost"
+                                android:layout_width="0dp"
+                                android:layout_height="44dp"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:minWidth="0dp"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:text="@string/settings_presets_save"
+                                android:textSize="13sp" />
+                        </LinearLayout>
+                    </LinearLayout>
         
                     <TextView
                         style="@style/Text.Muted"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/settings_provider" />
         
                     <TextView
@@ -820,8 +877,7 @@
                         android:id="@+id/group_baseurl"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:visibility="gone">
+                        android:orientation="vertical">
         
                         <TextView
                             style="@style/Text.Muted"
@@ -844,6 +900,94 @@
                             android:textColor="?attr/shText"
                             android:textColorHint="?attr/shTextMuted"
                             android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <TextView
+                        style="@style/Text.Section"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:text="@string/settings_section_search" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_card"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/settings_web_search"
+                                android:textColor="?attr/shText"
+                                android:textSize="15.5sp" />
+
+                            <com.google.android.material.switchmaterial.SwitchMaterial
+                                android:id="@+id/sw_model_search"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+                        </LinearLayout>
+
+                        <TextView
+                            style="@style/Text.Muted"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="@string/settings_search_url" />
+
+                        <EditText
+                            android:id="@+id/et_search_url"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="6dp"
+                            android:background="@drawable/bg_card"
+                            android:hint="@string/settings_search_url_hint"
+                            android:importantForAutofill="no"
+                            android:inputType="textUri"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:textColor="?attr/shText"
+                            android:textColorHint="?attr/shTextMuted"
+                            android:textSize="14.5sp" />
+
+                        <TextView
+                            style="@style/Text.Muted"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/settings_search_key" />
+
+                        <EditText
+                            android:id="@+id/et_search_key"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="6dp"
+                            android:background="@drawable/bg_card"
+                            android:hint="@string/settings_search_key_hint"
+                            android:importantForAutofill="no"
+                            android:inputType="textVisiblePassword"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp"
+                            android:textColor="?attr/shText"
+                            android:textColorHint="?attr/shTextMuted"
+                            android:textSize="14.5sp" />
+
+                        <TextView
+                            style="@style/Text.Muted"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:lineSpacingMultiplier="1.45"
+                            android:text="@string/settings_search_url_desc" />
                     </LinearLayout>
             </LinearLayout>
         </ScrollView>
@@ -1229,6 +1373,31 @@
                     android:layout_marginTop="8dp"
                     android:lineSpacingMultiplier="1.5"
                     android:text="@string/settings_amap_key_desc" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_card"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/settings_amap_guide_title"
+                        android:textColor="?attr/shText"
+                        android:textSize="15.5sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        style="@style/Text.Muted"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingMultiplier="1.55"
+                        android:text="@string/settings_amap_guide_body" />
+                </LinearLayout>
             </LinearLayout>
         </ScrollView>
     </FrameLayout>

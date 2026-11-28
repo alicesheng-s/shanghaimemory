@@ -17,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.shanghai.memory.R
 import com.shanghai.memory.data.AmapKeyManager
 import com.shanghai.memory.data.AppSettings
+import com.shanghai.memory.data.ModelPreset
 import com.shanghai.memory.data.PromptTemplates
 import com.shanghai.memory.data.SettingsStore
 import com.shanghai.memory.data.TtsSpeaker
@@ -64,6 +65,7 @@ class SettingsActivity : ThemedActivity() {
 
     /** 当前的落盘外观，改任一项都在它基础上推一次 */
     private var appearance: AppSettings = AppSettings()
+    private var modelPresets: List<ModelPreset> = emptyList()
     private val subPageBackCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
             showPage(PAGE_MENU)
@@ -86,6 +88,8 @@ class SettingsActivity : ThemedActivity() {
             if (currentPage == PAGE_MENU) finish() else showPage(PAGE_MENU)
         }
         binding.txtProvider.setOnClickListener { chooseProvider() }
+        binding.btnPresetSave.setOnClickListener { showSaveModelPresetDialog() }
+        binding.btnPresetSwitch.setOnClickListener { showSwitchModelPresetDialog() }
         binding.txtPalette.setOnClickListener { choosePalette() }
         binding.btnModels.setOnClickListener { fetchModels() }
         binding.btnSave.setOnClickListener { save() }
@@ -106,6 +110,19 @@ class SettingsActivity : ThemedActivity() {
         binding.swQuickBar.setOnCheckedChangeListener { _, checked ->
             if (suppressToggle) return@setOnCheckedChangeListener
             lifecycleScope.launch { store.setShowQuickBar(checked) }
+        }
+        binding.swModelSearch.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
+            suppressToggle = true
+            binding.swSearch.isChecked = checked
+            suppressToggle = false
+            if (currentPage == PAGE_MODEL) updateHint()
+        }
+        binding.swSearch.setOnCheckedChangeListener { _, checked ->
+            if (suppressToggle) return@setOnCheckedChangeListener
+            suppressToggle = true
+            binding.swModelSearch.isChecked = checked
+            suppressToggle = false
         }
 
         binding.sbAlpha.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -233,7 +250,9 @@ class SettingsActivity : ThemedActivity() {
 
     private fun load() {
         lifecycleScope.launch {
+            modelPresets = store.getModelPresets()
             applySettings(store.current())
+            updatePresetButtonLabel()
         }
     }
 
@@ -243,11 +262,14 @@ class SettingsActivity : ThemedActivity() {
         binding.etApikey.setText(settings.apiKey)
         binding.etModel.setText(settings.model)
         binding.etBaseurl.setText(settings.baseUrl)
+        binding.etSearchUrl.setText(settings.customSearchUrl)
+        binding.etSearchKey.setText(settings.customSearchKey)
         binding.etAmapKey.setText(settings.amapApiKey)
         // 回填会触发上面那几个监听器：不当成用户操作，否则会把同样的值再写一遍盘
         suppressToggle = true
         binding.swQuickBar.isChecked = settings.showQuickBar
         binding.swSearch.isChecked = settings.webSearchEnabled
+        binding.swModelSearch.isChecked = settings.webSearchEnabled
         binding.swTts.isChecked = settings.ttsEnabled
         binding.swPublicInstitution.isChecked = settings.allowPublicInstitution
         binding.swBusiness.isChecked = settings.allowBusiness
@@ -258,7 +280,7 @@ class SettingsActivity : ThemedActivity() {
         binding.sbTtsSpeed.progress = progressOf(settings.ttsSpeed)
         showSpeed(settings.ttsSpeed)
         showEngines()
-        binding.groupBaseurl.visibility = if (provider.isCustom) View.VISIBLE else View.GONE
+        binding.groupBaseurl.visibility = View.VISIBLE
 
         palette = PaletteId.of(settings.paletteId)
         binding.txtPaletteName.text = palette.label
@@ -398,27 +420,35 @@ class SettingsActivity : ThemedActivity() {
     private fun updateHint() {
         val en = ThemeState.isEnglish
         val base = binding.etBaseurl.text.toString().trim()
-        val insecure = base.startsWith("http://") && !isLoopback(base)
+        val searchUrl = binding.etSearchUrl.text.toString().trim()
+        val searchOn = binding.swModelSearch.isChecked
+        val insecure = (base.startsWith("http://") && !isLoopback(base)) ||
+            (searchUrl.startsWith("http://") && !isLoopback(searchUrl))
         val text = when {
             insecure -> if (en) {
                 "This endpoint uses plain http://, so your key and messages travel unencrypted. Switch to https:// unless this is a trusted local gateway."
             } else {
-                "这个地址用的是 http://，密钥和内容会明文传输。能换 https 尽量换，只有本机或自家局域网才建议继续用。"
+                "填写的接口使用了 http://，密钥和内容会明文传输。能换 https 尽量换，只有本机或自家局网才建议继续用。"
+            }
+            searchOn && searchUrl.isNotBlank() -> if (en) {
+                "Using your custom Search API endpoint together with the active chat model."
+            } else {
+                "已填写自定义搜索 API 地址，开启联网查证时将优先调用该检索端点。"
             }
             provider.isCustom -> if (en) {
                 "Custom endpoints should use an OpenAI-compatible /v1 prefix; /chat/completions is appended automatically."
             } else {
                 "自定义地址填写兼容 OpenAI 的 /v1 前缀即可，应用会自动拼接 /chat/completions。"
             }
-            provider.hasWebSearch -> if (en) {
+            provider.hasWebSearch && searchOn -> if (en) {
                 "This provider supports web search: public sources are checked first before the story is told."
             } else {
                 "这家服务商支持边查资料边讲：会先检索公开资料，再为你组织故事并标明来源。"
             }
             else -> if (en) {
-                "This provider has no built-in web search—stories will rely on model knowledge alone."
+                "Web search is off or unavailable for this provider—stories will rely on model knowledge alone unless you set a Custom Search URL."
             } else {
-                "这家服务商暂不提供官方检索接口，会直接根据模型记忆讲述，结尾会注明「未联网核实」。"
+                "当前未开启联网检索或服务商未自带搜索接口；如需联网查证，可打开开关或在下方填写自定义搜索 API。"
             }
         }
         binding.txtStatus.text = text
@@ -755,12 +785,13 @@ class SettingsActivity : ThemedActivity() {
 
     private fun currentInput(): AppSettings {
         val base = binding.etBaseurl.text.toString().trim()
+        val searchOn = if (currentPage == PAGE_MODEL) binding.swModelSearch.isChecked else binding.swSearch.isChecked
         return AppSettings(
             providerId = provider.id,
             apiKey = binding.etApikey.text.toString().trim(),
             model = binding.etModel.text.toString().trim(),
             baseUrl = base.ifBlank { provider.chatBaseUrl },
-            webSearchEnabled = binding.swSearch.isChecked,
+            webSearchEnabled = searchOn,
             paletteId = palette.key,
             ttsEnabled = binding.swTts.isChecked,
             ttsSpeed = speedOf(binding.sbTtsSpeed.progress),
@@ -778,12 +809,164 @@ class SettingsActivity : ThemedActivity() {
             fontId = font.key,
             fontScale = scaleOf(binding.sbFontScale.progress),
             importedFontPath = appearance.importedFontPath,
-            customSearchUrl = appearance.customSearchUrl,
+            customSearchUrl = binding.etSearchUrl.text.toString().trim(),
+            customSearchKey = binding.etSearchKey.text.toString().trim(),
             temperature = appearance.temperature,
             surfaceAlpha = appearance.surfaceAlpha,
             onboarded = appearance.onboarded,
             language = appearance.language
         )
+    }
+
+    private fun updatePresetButtonLabel() {
+        binding.btnPresetSwitch.text = getString(R.string.settings_presets_switch, modelPresets.size)
+    }
+
+    private fun maskKey(key: String): String {
+        val clean = key.trim()
+        return when {
+            clean.isEmpty() -> getString(R.string.settings_presets_nokey)
+            clean.length <= 8 -> "${clean.take(2)}***"
+            else -> "${clean.take(4)}…${clean.takeLast(4)}"
+        }
+    }
+
+    private fun showSaveModelPresetDialog() {
+        val en = ThemeState.isEnglish
+        val draft = currentInput()
+        if (draft.apiKey.isBlank() && draft.baseUrl.isBlank()) {
+            binding.txtStatus.text = if (en) "Fill in at least the API Key or Base URL first." else "至少先填写 API Key 或接口地址再保存方案。"
+            return
+        }
+        val pad = dp(20)
+        val modelHint = draft.model.ifBlank { provider.defaultModel }
+        val input = EditText(this).apply {
+            setHint(R.string.settings_presets_name_hint)
+            setText("${provider.displayName} · $modelHint")
+            setSelection(text.length)
+            setTextColor(colorOf(R.attr.shText))
+            setHintTextColor(colorOf(R.attr.shTextMuted))
+            setBackgroundResource(R.drawable.bg_card)
+            setPadding(dp(14), dp(12), dp(14), dp(12))
+            isSingleLine = true
+        }
+        val box = FrameLayout(this).apply {
+            setPadding(pad, dp(10), pad, 0)
+            addView(
+                input,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_presets_save_title)
+            .setView(box)
+            .setPositiveButton(R.string.common_confirm, null)
+            .setNegativeButton(R.string.common_cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val name = input.text.toString().trim()
+                if (name.isEmpty()) {
+                    input.error = getString(R.string.settings_presets_name_hint)
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                val preset = ModelPreset(
+                    id = "mp_${System.currentTimeMillis()}",
+                    name = name,
+                    providerId = draft.providerId,
+                    apiKey = draft.apiKey,
+                    model = draft.model.ifBlank { provider.defaultModel },
+                    baseUrl = draft.baseUrl,
+                    webSearchEnabled = draft.webSearchEnabled,
+                    customSearchUrl = draft.customSearchUrl,
+                    customSearchKey = draft.customSearchKey
+                )
+                lifecycleScope.launch {
+                    modelPresets = store.saveModelPreset(preset)
+                    updatePresetButtonLabel()
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        getString(R.string.settings_presets_saved_toast, name),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    private fun showSwitchModelPresetDialog() {
+        if (modelPresets.isEmpty()) {
+            Toast.makeText(this, R.string.settings_presets_empty, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val current = currentInput()
+        val labels = modelPresets.map { p ->
+            buildString {
+                append(p.name)
+                append("\n")
+                append(p.model.ifBlank { "-" })
+                append(" · ")
+                append(maskKey(p.apiKey))
+                append("\n")
+                append(p.baseUrl.ifBlank { Providers.byId(p.providerId).chatBaseUrl })
+                if (p.customSearchUrl.isNotBlank()) {
+                    append("\nSearch: ")
+                    append(p.customSearchUrl)
+                }
+            }
+        }.toTypedArray()
+        val checked = modelPresets.indexOfFirst {
+            it.apiKey == current.apiKey &&
+                it.baseUrl == current.baseUrl &&
+                it.model == current.model
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_presets_pick_title)
+            .setSingleChoiceItems(labels, checked) { dialog, which ->
+                dialog.dismiss()
+                val picked = modelPresets[which]
+                lifecycleScope.launch {
+                    store.applyModelPreset(picked)
+                    applySettings(store.current())
+                    updateHint()
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        getString(R.string.settings_presets_switched_toast, picked.name),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNeutralButton(R.string.settings_presets_manage_delete) { _, _ ->
+                showDeleteModelPresetDialog()
+            }
+            .setNegativeButton(R.string.common_cancel, null)
+            .show()
+    }
+
+    private fun showDeleteModelPresetDialog() {
+        if (modelPresets.isEmpty()) return
+        val labels = modelPresets.map { "${it.name} (${maskKey(it.apiKey)})" }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_presets_delete_title)
+            .setItems(labels) { _, which ->
+                val target = modelPresets[which]
+                lifecycleScope.launch {
+                    modelPresets = store.deleteModelPreset(target.id)
+                    updatePresetButtonLabel()
+                    Toast.makeText(
+                        this@SettingsActivity,
+                        getString(R.string.settings_presets_deleted_toast, target.name),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNegativeButton(R.string.common_cancel, null)
+            .show()
     }
 
     private fun updateMapHint() {
@@ -813,6 +996,8 @@ class SettingsActivity : ThemedActivity() {
             AmapKeyManager.apply(this@SettingsActivity, draft.amapApiKey)
             store.setShowQuickBar(draft.showQuickBar)
             store.setWebSearch(draft.webSearchEnabled)
+            store.setCustomSearchUrl(draft.customSearchUrl)
+            store.setCustomSearchKey(draft.customSearchKey)
             store.setTtsEnabled(draft.ttsEnabled)
             store.setTtsSpeed(draft.ttsSpeed)
             store.setExtraKeywords(draft.extraKeywords)

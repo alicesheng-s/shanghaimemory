@@ -62,6 +62,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".ui.FamousLandmarksActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
             android:name=".ui.SettingsActivity"
             android:exported="false"
             android:screenOrientation="portrait"

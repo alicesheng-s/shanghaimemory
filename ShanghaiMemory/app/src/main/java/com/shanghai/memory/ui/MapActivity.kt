@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -130,6 +131,38 @@ class MapActivity : ThemedActivity() {
     private var navAccuracyCircle: Circle? = null
     private var touchDownX = 0f
     private var touchDownY = 0f
+
+    private val famousLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { res ->
+        val data = res.data ?: return@registerForActivityResult
+        if (res.resultCode != RESULT_OK) return@registerForActivityResult
+        val name = data.getStringExtra(FamousLandmarksActivity.EXTRA_NAME).orEmpty()
+        val area = data.getStringExtra(FamousLandmarksActivity.EXTRA_AREA).orEmpty()
+        val query = data.getStringExtra(FamousLandmarksActivity.EXTRA_QUERY).orEmpty().ifBlank { name }
+        val lat = data.getDoubleExtra(FamousLandmarksActivity.EXTRA_LAT, 0.0)
+        val lng = data.getDoubleExtra(FamousLandmarksActivity.EXTRA_LNG, 0.0)
+        if (name.isBlank() || (lat == 0.0 && lng == 0.0)) return@registerForActivityResult
+        val fallbackPoi = PoiInfo(
+            name = name,
+            type = getString(R.string.famous_poi_type),
+            address = area,
+            district = area.substringBefore("·").trim(),
+            lat = lat,
+            lng = lng
+        )
+        focusOn(fallbackPoi)
+        if (query.isNotBlank()) {
+            resolveJob?.cancel()
+            resolveJob = lifecycleScope.launch {
+                val hits = runCatching { amapService.searchByKeyword(query) }.getOrDefault(emptyList())
+                val first = hits.firstOrNull()
+                if (first != null && first.lat != 0.0 && first.lng != 0.0) {
+                    focusOn(first)
+                }
+            }
+        }
+    }
 
     override val autoInsetPadding: Boolean get() = false
 
@@ -842,6 +875,10 @@ class MapActivity : ThemedActivity() {
         binding.btnDrawerRoute.setOnClickListener {
             toggleDrawer(false)
             startActivity(Intent(this, RouteActivity::class.java))
+        }
+        binding.btnDrawerFamous.setOnClickListener {
+            toggleDrawer(false)
+            famousLauncher.launch(Intent(this, FamousLandmarksActivity::class.java))
         }
         binding.btnDrawerSettings.setOnClickListener {
             toggleDrawer(false)
